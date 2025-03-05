@@ -14,9 +14,9 @@ const Home: React.FC = () => {
       >
         Home
       </motion.h1>
-      <button className="btn">
-        <NavLink to="/setting">click to Setting</NavLink>
-      </button>
+      <NavLink to="/setting">
+        <button className="btn">click to Setting</button>
+      </NavLink>
       <button className="btn btn-secondary" onClick={increment}>
         <span>count: {count}</span>
       </button>

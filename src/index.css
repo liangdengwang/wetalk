@@ -1,2 +1,13 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+@theme {
+  --color-primary: #5368f1;
+  --color-ghost: red;
+  --font-design: "design";
+}
+
+@font-face {
+  font-family: "design";
+  src: url("./assets/fonts/PoiretOne-Regular.ttf");
+}
