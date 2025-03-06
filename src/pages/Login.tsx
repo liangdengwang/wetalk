@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
+import BgWebM from "../assets/videos/login_page_bg.webm";
 import BgVideo from "../assets/videos/login_page_bg.mp4";
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useUserStore } from "../store";
@@ -52,12 +53,14 @@ const Login = () => {
       <title>{`${isLogin ? "登陆" : "注册"} | WeTalk`}</title>
       <div className="w-screen h-screen flex justify-center items-center">
         <video
-          src={BgVideo}
           autoPlay
           loop
           muted
           className="fixed top-0 left-0 w-screen h-screen object-cover z-[-1]"
-        />
+        >
+          <source src={BgWebM} type="video/webm" />
+          <source src={BgVideo} type="video/mp4" />
+        </video>
         {/* 标题和标语 */}
         <div className="w-2/5 h-[3/5] mix-blend-difference flex flex-col items-start justify-between gap-y-16">
           <motion.h1
