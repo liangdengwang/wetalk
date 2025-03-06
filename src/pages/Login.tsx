@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
+import BgWebM from "../assets/videos/login_page_bg.webm";
 import BgVideo from "../assets/videos/login_page_bg.mp4";
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useUserStore } from "../store";
@@ -49,14 +50,17 @@ const Login = () => {
 
   return (
     <>
+      <title>{`${isLogin ? "登陆" : "注册"} | WeTalk`}</title>
       <div className="w-screen h-screen flex justify-center items-center">
         <video
-          src={BgVideo}
           autoPlay
           loop
           muted
           className="fixed top-0 left-0 w-screen h-screen object-cover z-[-1]"
-        />
+        >
+          <source src={BgWebM} type="video/webm" />
+          <source src={BgVideo} type="video/mp4" />
+        </video>
         {/* 标题和标语 */}
         <div className="w-2/5 h-[3/5] mix-blend-difference flex flex-col items-start justify-between gap-y-16">
           <motion.h1
@@ -84,7 +88,7 @@ const Login = () => {
             initial={{ opacity: 0, scale: 1 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="backdrop-blur-2xl mix-blend-difference w-3/5 h-2/5 bg-white/10 border border-white/20 rounded-2xl p-8 flex flex-col gap-8 shadow-2xl"
+            className="duration-700 backdrop-blur-2xl mix-blend-difference w-3/5 min-h-2/5 bg-white/10 border border-white/20 rounded-2xl px-8 py-16 flex flex-col gap-8 shadow-2xl"
           >
             {/* 切换按钮 */}
             <div className="relative w-full flex justify-center mb-2">
