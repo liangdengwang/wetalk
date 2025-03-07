@@ -1,6 +1,6 @@
 import { NavLink } from "react-router";
 import { motion } from "motion/react";
-import { useUserStore } from "../store";
+import { useUserStore } from "../../store";
 
 const About: React.FC = () => {
   const logout = useUserStore((state) => state.logout);

@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router";
-import Home from "../pages/Home";
-import Setting from "../pages/Setting";
-import Login from "../pages/Login";
+import Home from "../pages/home/index";
+import Setting from "../pages/setting/index";
+import Login from "../pages/login/index";
 import PrivateRoute from "./PrivateRoute";
 
 const RouterConfig: React.FC = () => (

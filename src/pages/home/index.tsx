@@ -1,6 +1,6 @@
 import { NavLink } from "react-router";
 import { motion } from "motion/react";
-import { useCountStore } from "../store";
+import { useCountStore } from "../../store";
 
 const Home: React.FC = () => {
   const count = useCountStore((state) => state.count);
