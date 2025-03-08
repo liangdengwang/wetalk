@@ -1,0 +1,444 @@
+/* Discord 风格的全局 CSS */
+
+/* 导入 Discord 使用的字体 */
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap");
+
+:root {
+  /* 亮色模式变量 */
+  --color-brand-primary: #5865f2;
+  --color-brand-secondary: #57f287;
+  --color-brand-danger: #ed4245;
+  --color-brand-warning: #fee75c;
+
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f2f3f5;
+  --color-bg-tertiary: #e3e5e8;
+  --color-bg-accent: #5865f2;
+
+  --color-text-primary: #2e3338;
+  --color-text-secondary: #4f5660;
+  --color-text-muted: #747f8d;
+  --color-text-accent: #5865f2;
+  --color-text-inverse: #ffffff;
+
+  --color-border-primary: #e3e5e8;
+  --color-border-secondary: #d4d7dc;
+
+  --color-status-online: #57f287;
+  --color-status-idle: #fee75c;
+  --color-status-dnd: #ed4245;
+  --color-status-offline: #747f8d;
+
+  /* 过渡效果 */
+  --transition-fast: 0.1s;
+  --transition-normal: 0.2s;
+  --transition-slow: 0.3s;
+
+  /* 圆角 */
+  --border-radius-sm: 3px;
+  --border-radius-md: 5px;
+  --border-radius-lg: 8px;
+  --border-radius-xl: 12px;
+  --border-radius-2xl: 16px;
+  --border-radius-full: 9999px;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.2);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+  /* 字体 */
+  --font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* 暗色模式变量 */
+.dark {
+  --color-bg-primary: #36393f;
+  --color-bg-secondary: #2f3136;
+  --color-bg-tertiary: #202225;
+
+  --color-text-primary: #dcddde;
+  --color-text-secondary: #b9bbbe;
+  --color-text-muted: #72767d;
+
+  --color-border-primary: #202225;
+  --color-border-secondary: #40444b;
+
+  --color-status-offline: #72767d;
+}
+
+/* 全局样式 */
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  transition: background-color var(--transition-normal),
+    color var(--transition-normal);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-text-muted);
+  border-radius: var(--border-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-secondary);
+}
+
+/* Discord 风格的按钮 */
+.discord-button {
+  background-color: var(--color-brand-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: background-color var(--transition-fast);
+}
+
+.discord-button:hover {
+  background-color: #4752c4; /* 稍微暗一点的蓝色 */
+}
+
+.discord-button:active {
+  background-color: #3c45a5; /* 更暗的蓝色 */
+}
+
+.discord-button-secondary {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.discord-button-secondary:hover {
+  background-color: #d1d3d7; /* 亮色模式下稍微暗一点 */
+}
+
+.dark .discord-button-secondary:hover {
+  background-color: #292b2f; /* 暗色模式下稍微亮一点 */
+}
+
+/* Discord 风格的输入框 */
+.discord-input {
+  background-color: var(--color-bg-tertiary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  padding: 10px 16px;
+  color: var(--color-text-primary);
+  transition: background-color var(--transition-fast);
+}
+
+.discord-input:focus {
+  outline: none;
+  background-color: var(--color-bg-primary);
+  box-shadow: 0 0 0 2px var(--color-brand-primary);
+}
+
+/* Discord 风格的卡片 */
+.discord-card {
+  background-color: var(--color-bg-primary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* Discord 风格的头像 */
+.discord-avatar {
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+  background-color: var(--color-bg-tertiary);
+}
+
+/* Discord 风格的消息气泡 */
+.discord-message {
+  padding: 8px 16px;
+  border-radius: var(--border-radius-md);
+  max-width: 90%;
+}
+
+.discord-message-self {
+  background-color: var(--color-brand-primary);
+  color: white;
+}
+
+.discord-message-other {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+/* Discord 风格的分割线 */
+.discord-divider {
+  height: 1px;
+  background-color: var(--color-border-primary);
+  margin: 8px 0;
+}
+
+/* Discord 风格的标签 */
+.discord-tag {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  border-radius: var(--border-radius-full);
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Discord 风格的工具提示 */
+.discord-tooltip {
+  background-color: black;
+  color: white;
+  border-radius: var(--border-radius-md);
+  padding: 8px 12px;
+  font-size: 14px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Discord 风格的状态指示器 */
+.discord-status {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--border-radius-full);
+  border: 2px solid var(--color-bg-primary);
+}
+
+.discord-status-online {
+  background-color: var(--color-status-online);
+}
+
+.discord-status-idle {
+  background-color: var(--color-status-idle);
+}
+
+.discord-status-dnd {
+  background-color: var(--color-status-dnd);
+}
+
+.discord-status-offline {
+  background-color: var(--color-status-offline);
+}
+
+/* Discord 风格的动画 */
+@keyframes discord-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.discord-pulse {
+  animation: discord-pulse 2s infinite;
+}
+
+/* Discord 风格的布局 */
+.discord-layout {
+  display: grid;
+  grid-template-columns: 72px 240px 1fr;
+  height: 100vh;
+}
+
+.dark .discord-layout {
+  background-color: var(--color-bg-tertiary);
+}
+
+.discord-sidebar {
+  background-color: var(--color-bg-tertiary);
+  height: 100%;
+}
+
+.discord-channel-list {
+  background-color: var(--color-bg-secondary);
+  height: 100%;
+}
+
+.discord-main {
+  background-color: var(--color-bg-primary);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Discord 风格的频道 */
+.discord-channel {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-secondary);
+  margin: 2px 0;
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.discord-channel:hover {
+  background-color: rgba(79, 84, 92, 0.16);
+  color: var(--color-text-primary);
+}
+
+.discord-channel.active {
+  background-color: rgba(79, 84, 92, 0.32);
+  color: var(--color-text-primary);
+}
+
+/* Discord 风格的服务器图标 */
+.discord-server {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--border-radius-full);
+  background-color: var(--color-bg-secondary);
+  margin: 8px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-primary);
+  font-weight: bold;
+  cursor: pointer;
+  transition: border-radius var(--transition-fast);
+}
+
+.discord-server:hover,
+.discord-server.active {
+  border-radius: var(--border-radius-lg);
+  background-color: var(--color-brand-primary);
+  color: white;
+}
+
+/* 消息气泡样式优化 */
+.discord-message-bubble {
+  position: relative;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  max-width: 90%;
+  word-break: break-word;
+}
+
+.discord-message-bubble.self {
+  background-color: #5865f2;
+  color: white;
+  border-top-right-radius: 0;
+}
+
+.discord-message-bubble.other {
+  background-color: #2f3136;
+  color: #dcddde;
+  border-top-left-radius: 0;
+}
+
+/* 时间戳样式 */
+.discord-timestamp {
+  font-size: 0.75rem;
+  color: #72767d;
+  margin: 0 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.discord-message:hover .discord-timestamp {
+  opacity: 1;
+}
+
+/* 用户头像样式 */
+.discord-user-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+
+/* 用户状态指示器 */
+.discord-user-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  border: 2px solid #36393f;
+}
+
+/* 消息组样式 */
+.discord-message-group {
+  margin-bottom: 0.25rem;
+}
+
+.discord-message-group:hover {
+  background-color: rgba(4, 4, 5, 0.07);
+}
+
+.dark .discord-message-group:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* 日期分隔线样式 */
+.discord-date-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 1rem;
+  color: #72767d;
+}
+
+.discord-date-divider::before,
+.discord-date-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: #40444b;
+}
+
+.discord-date-divider span {
+  padding: 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* 聊天区域背景 */
+.discord-chat-area {
+  background-color: #36393f;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 修复滚动条样式 */
+.discord-messages-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.discord-messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.discord-messages-container::-webkit-scrollbar-thumb {
+  background-color: rgba(32, 34, 37, 0.6);
+  border-radius: 4px;
+}
+
+.discord-messages-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(32, 34, 37, 0.8);
+}

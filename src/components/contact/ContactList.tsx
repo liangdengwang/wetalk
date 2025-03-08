@@ -58,51 +58,52 @@ const ContactList: React.FC<ContactListProps> = ({ className = "", style }) => {
 
   // 模拟群聊列表数据
   const groups: Group[] = [
-    { id: 101, name: "技术交流群", members: 25, avatar: "技" },
-    { id: 102, name: "产品讨论组", members: 12, avatar: "产" },
-    { id: 103, name: "市场营销部", members: 18, avatar: "市" },
-    { id: 104, name: "HR招聘群", members: 8, avatar: "招" },
-    { id: 105, name: "公司全员群", members: 56, avatar: "公" },
-    { id: 106, name: "前端开发组", members: 15, avatar: "前" },
-    { id: 107, name: "后端开发组", members: 20, avatar: "后" },
-    { id: 108, name: "UI设计小组", members: 10, avatar: "设" },
+    { id: 101, name: "产品讨论组", members: 8, avatar: "产" },
+    { id: 102, name: "技术交流群", members: 12, avatar: "技" },
+    { id: 103, name: "市场营销", members: 6, avatar: "市" },
+    { id: 104, name: "客户服务", members: 5, avatar: "客" },
+    { id: 105, name: "人力资源", members: 4, avatar: "人" },
+    { id: 106, name: "管理层", members: 3, avatar: "管" },
   ];
 
-  // 根据搜索关键词过滤联系人或群聊
+  // 根据搜索过滤列表
   const filteredContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(searchQuery.toLowerCase())
+    contact.name.includes(searchQuery)
   );
 
   const filteredGroups = groups.filter((group) =>
-    group.name.toLowerCase().includes(searchQuery.toLowerCase())
+    group.name.includes(searchQuery)
   );
 
-  // 根据当前激活的标签选择显示的列表
-  const displayList =
+  // 根据当前选中的标签显示不同的列表
+  const displayList: ListItem[] =
     activeTab === "contacts" ? filteredContacts : filteredGroups;
-  const emptyMessage =
-    activeTab === "contacts" ? "未找到匹配的联系人" : "未找到匹配的群聊";
 
-  // 处理点击联系人或群聊的事件
+  // 处理列表项点击
   const handleItemClick = (id: number) => {
-    const path = activeTab === "contacts" ? `/contacts/${id}` : `/groups/${id}`;
-    navigate(path);
+    if (activeTab === "contacts") {
+      navigate(`/contacts/${id}`);
+    } else {
+      navigate(`/groups/${id}`);
+    }
   };
 
-  // 判断项目是联系人还是群聊
+  // 判断是否为联系人类型
   const isContact = (item: ListItem): item is Contact => {
     return "status" in item;
   };
 
-  // 获取状态对应的颜色
+  // 根据状态获取颜色
   const getStatusColor = (status: string) => {
     switch (status) {
       case "在线":
-        return "bg-green-500";
+        return "bg-green-500 dark:bg-green-600";
+      case "离线":
+        return "bg-gray-400 dark:bg-gray-500";
       case "忙碌":
-        return "bg-orange-500";
+        return "bg-orange-500 dark:bg-orange-600";
       default:
-        return "bg-gray-400";
+        return "bg-gray-400 dark:bg-gray-500";
     }
   };
 
@@ -113,10 +114,10 @@ const ContactList: React.FC<ContactListProps> = ({ className = "", style }) => {
 
   return (
     <div
-      className={`h-full flex flex-col border-r border-gray-200 ${className}`}
+      className={`h-full flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${className}`}
       style={style}
     >
-      {/* 切换栏 */}
+      {/* 标签栏 */}
       <TabBar tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
 
       {/* 搜索框 */}
@@ -154,7 +155,7 @@ const ContactList: React.FC<ContactListProps> = ({ className = "", style }) => {
                 <ListItem
                   key={item.id}
                   avatar={item.avatar}
-                  avatarColor="bg-blue-500"
+                  avatarColor="bg-blue-500 dark:bg-blue-600"
                   title={item.name}
                   rightText={`${item.members}人`}
                   isActive={isActive}
@@ -164,24 +165,24 @@ const ContactList: React.FC<ContactListProps> = ({ className = "", style }) => {
             }
           })
         ) : (
-          <div className="flex flex-col items-center justify-center h-40 text-gray-500">
-            <p>{emptyMessage}</p>
+          <div className="flex flex-col items-center justify-center h-40 text-gray-500 dark:text-gray-400">
+            <p>未找到匹配的{activeTab === "contacts" ? "联系人" : "群聊"}</p>
           </div>
         )}
       </div>
 
       {/* 添加按钮 */}
-      <div className="p-4">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <ActionButton
           icon={
             activeTab === "contacts" ? (
-              <UserPlus className="w-6 h-6" />
+              <UserPlus size={20} />
             ) : (
-              <Users className="w-6 h-6" />
+              <Users size={20} />
             )
           }
-          color="primary"
-          className="ml-auto"
+          label={activeTab === "contacts" ? "添加联系人" : "创建群聊"}
+          fullWidth
         />
       </div>
     </div>

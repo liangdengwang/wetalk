@@ -16,6 +16,15 @@ interface UserStore {
   logout: () => void;
 }
 
+// 主题类型
+type ThemeMode = "light" | "dark" | "system";
+
+// 主题状态管理接口
+interface ThemeStore {
+  mode: ThemeMode;
+  setMode: (mode: ThemeMode) => void;
+}
+
 const useCountStore = create<CountStore>((set) => ({
   count: 1,
   inc: () => set((state) => ({ count: state.count + 1 })),
@@ -52,4 +61,17 @@ const useUserStore = create(
   )
 );
 
-export { useCountStore, useUserStore };
+// 创建主题状态管理
+const useThemeStore = create(
+  persist<ThemeStore>(
+    (set) => ({
+      mode: "system", // 默认使用系统主题
+      setMode: (mode: ThemeMode) => set({ mode }),
+    }),
+    {
+      name: "theme-store",
+    }
+  )
+);
+
+export { useCountStore, useUserStore, useThemeStore };
