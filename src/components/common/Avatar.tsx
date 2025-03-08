@@ -25,17 +25,17 @@ const Avatar: React.FC<AvatarProps> = ({
 
   // 根据状态设置背景色
   const getBgColor = () => {
-    if (isGroup) return "bg-blue-500";
+    if (isGroup) return "bg-blue-500 dark:bg-blue-600";
 
     switch (status) {
       case "online":
-        return "bg-green-500";
+        return "bg-green-500 dark:bg-green-600";
       case "busy":
-        return "bg-orange-500";
+        return "bg-orange-500 dark:bg-orange-600";
       case "offline":
-        return "bg-gray-400";
+        return "bg-gray-400 dark:bg-gray-500";
       default:
-        return "bg-gray-400";
+        return "bg-gray-400 dark:bg-gray-500";
     }
   };
 

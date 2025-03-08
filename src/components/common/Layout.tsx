@@ -32,7 +32,7 @@ const Layout: React.FC<LayoutProps> = ({ centerSlot, rightSlot }) => {
 
   return (
     <div
-      className="w-screen h-screen flex"
+      className="w-screen h-screen flex bg-white dark:bg-gray-900"
       onMouseMove={handleDrag}
       onMouseUp={handleDragEnd}
       onMouseLeave={handleDragEnd}
@@ -47,10 +47,20 @@ const Layout: React.FC<LayoutProps> = ({ centerSlot, rightSlot }) => {
 
       {/* 拖拽调整器 */}
       <motion.div
-        className="w-1 h-full bg-gray-200 cursor-col-resize hover:bg-blue-500 active:bg-blue-600 transition-colors duration-200"
+        className="w-1 h-full bg-gray-200 dark:bg-gray-700 cursor-col-resize hover:bg-blue-500 dark:hover:bg-blue-600 active:bg-blue-600 dark:active:bg-blue-700 transition-colors duration-200"
         onMouseDown={handleDragStart}
-        whileHover={{ backgroundColor: "#3b82f6" }}
-        whileTap={{ backgroundColor: "#2563eb" }}
+        whileHover={{ backgroundColor: "var(--hover-color, #3b82f6)" }}
+        whileTap={{ backgroundColor: "var(--tap-color, #2563eb)" }}
+        style={
+          {
+            "--hover-color": document.documentElement.classList.contains("dark")
+              ? "#2563eb"
+              : "#3b82f6",
+            "--tap-color": document.documentElement.classList.contains("dark")
+              ? "#1d4ed8"
+              : "#2563eb",
+          } as React.CSSProperties
+        }
       />
 
       {/* 右边固定的内容区域 */}

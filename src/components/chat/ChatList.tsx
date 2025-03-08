@@ -1,25 +1,12 @@
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { motion } from "motion/react";
+import { Search, MessageSquarePlus } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
-import TabBar, { TabItem } from "../common/TabBar";
-import SearchBar from "../common/SearchBar";
-import ListItem from "../common/ListItem";
-import ActionButton from "../common/ActionButton";
+import useChatStore, { ChatItem } from "../../store/chatStore";
 
 interface ChatListProps {
   className?: string;
   style?: React.CSSProperties;
-}
-
-// 定义聊天项接口
-interface ChatItem {
-  id: number;
-  name: string;
-  lastMessage: string;
-  time: string;
-  unread: number;
-  avatar: string;
-  isGroup: boolean;
 }
 
 const ChatList: React.FC<ChatListProps> = ({ className = "", style }) => {
@@ -30,79 +17,8 @@ const ChatList: React.FC<ChatListProps> = ({ className = "", style }) => {
   const navigate = useNavigate();
   const { contactId, groupId } = useParams();
 
-  // 定义切换栏选项
-  const tabs: TabItem[] = [
-    { id: "all", label: "全部" },
-    { id: "contacts", label: "联系人" },
-    { id: "groups", label: "群聊" },
-  ];
-
-  // 模拟聊天列表数据
-  const chatList: ChatItem[] = [
-    {
-      id: 1,
-      name: "张三",
-      lastMessage: "你好，最近怎么样？",
-      time: "10:30",
-      unread: 2,
-      avatar: "张",
-      isGroup: false,
-    },
-    {
-      id: 2,
-      name: "李四",
-      lastMessage: "项目进展如何？",
-      time: "昨天",
-      unread: 0,
-      avatar: "李",
-      isGroup: false,
-    },
-    {
-      id: 3,
-      name: "王五",
-      lastMessage: "周末有空一起吃饭吗？",
-      time: "周三",
-      unread: 0,
-      avatar: "王",
-      isGroup: false,
-    },
-    {
-      id: 101,
-      name: "技术交流群",
-      lastMessage: "李四: 你需要在父路由组件中添加<Outlet />组件。",
-      time: "09:40",
-      unread: 5,
-      avatar: "技",
-      isGroup: true,
-    },
-    {
-      id: 102,
-      name: "产品讨论组",
-      lastMessage: "孙八: 同意，注册流程太复杂了。",
-      time: "14:30",
-      unread: 0,
-      avatar: "产",
-      isGroup: true,
-    },
-    {
-      id: 4,
-      name: "赵六",
-      lastMessage: "收到，我待会儿看看。",
-      time: "09:22",
-      unread: 0,
-      avatar: "赵",
-      isGroup: false,
-    },
-    {
-      id: 103,
-      name: "市场营销部",
-      lastMessage: "李四: 不超过5万元。",
-      time: "11:30",
-      unread: 3,
-      avatar: "市",
-      isGroup: true,
-    },
-  ];
+  // 使用聊天状态管理
+  const chatList = useChatStore((state) => state.chatList);
 
   // 根据搜索关键词和当前标签过滤聊天列表
   const filteredChatList = chatList
@@ -125,6 +41,9 @@ const ChatList: React.FC<ChatListProps> = ({ className = "", style }) => {
 
   // 处理聊天项点击
   const handleChatItemClick = (chat: ChatItem) => {
+    // 标记为已读
+    useChatStore.getState().markAsRead(chat.id);
+
     if (chat.isGroup) {
       navigate(`/chat/group/${chat.id}`);
     } else {
@@ -141,57 +60,145 @@ const ChatList: React.FC<ChatListProps> = ({ className = "", style }) => {
     }
   };
 
-  // 处理标签切换
-  const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId as "all" | "contacts" | "groups");
-  };
-
   return (
     <div
-      className={`h-full flex flex-col border-r border-gray-200 ${className}`}
+      className={`h-full flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${className}`}
       style={style}
     >
       {/* 切换栏 */}
-      <TabBar tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
+      <div className="flex border-b border-gray-200 dark:border-gray-700">
+        <button
+          className={`flex-1 py-3 font-medium text-sm transition-colors duration-200 ${
+            activeTab === "all"
+              ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+              : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          }`}
+          onClick={() => setActiveTab("all")}
+        >
+          全部
+        </button>
+        <button
+          className={`flex-1 py-3 font-medium text-sm transition-colors duration-200 ${
+            activeTab === "contacts"
+              ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+              : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          }`}
+          onClick={() => setActiveTab("contacts")}
+        >
+          联系人
+        </button>
+        <button
+          className={`flex-1 py-3 font-medium text-sm transition-colors duration-200 ${
+            activeTab === "groups"
+              ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+              : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          }`}
+          onClick={() => setActiveTab("groups")}
+        >
+          群聊
+        </button>
+      </div>
 
-      {/* 搜索框 */}
-      <SearchBar
-        value={searchQuery}
-        onChange={setSearchQuery}
-        placeholder="搜索聊天"
-      />
+      {/* 头部搜索 */}
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="搜索聊天"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-full bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white transition-all duration-300"
+          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
+        </div>
+      </div>
 
       {/* 聊天列表 */}
       <div className="flex-1 overflow-y-auto">
         {filteredChatList.length > 0 ? (
           filteredChatList.map((chat) => (
-            <ListItem
+            <motion.div
               key={chat.id}
-              avatar={chat.avatar}
-              avatarColor={chat.isGroup ? "bg-blue-500" : "bg-green-500"}
-              title={chat.name}
-              subtitle={chat.lastMessage}
-              rightText={chat.time}
-              rightBadge={chat.unread}
-              isActive={isChatActive(chat)}
+              className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${
+                isChatActive(chat) ? "bg-blue-50 dark:bg-blue-900/30" : ""
+              }`}
               onClick={() => handleChatItemClick(chat)}
-            />
+              style={
+                {
+                  "--hover-color": document.documentElement.classList.contains(
+                    "dark"
+                  )
+                    ? "#374151"
+                    : "#f9fafb",
+                  "--tap-color": document.documentElement.classList.contains(
+                    "dark"
+                  )
+                    ? "#1f2937"
+                    : "#f3f4f6",
+                } as React.CSSProperties
+              }
+            >
+              <div className="flex items-center">
+                {/* 头像 */}
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold mr-3 ${
+                    chat.isGroup
+                      ? "bg-blue-500 dark:bg-blue-600"
+                      : "bg-green-500 dark:bg-green-600"
+                  }`}
+                >
+                  {chat.avatar}
+                </div>
+
+                {/* 聊天信息 */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                      {chat.name}
+                    </h3>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {chat.time}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                      {chat.lastMessage}
+                    </p>
+                    {chat.unread > 0 && (
+                      <span className="ml-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {chat.unread}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center h-40 text-gray-500">
+          <div className="flex flex-col items-center justify-center h-40 text-gray-500 dark:text-gray-400">
             <p>未找到匹配的聊天</p>
           </div>
         )}
       </div>
 
       {/* 新建聊天按钮 */}
-      <div className="p-4">
-        <ActionButton
-          icon={<Plus className="w-6 h-6" />}
-          color="primary"
-          className="ml-auto"
-        />
-      </div>
+      <motion.button
+        className="m-4 p-3 bg-blue-600 dark:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center"
+        whileHover={{
+          scale: 1.05,
+          backgroundColor: "var(--hover-color, #2563eb)",
+        }}
+        whileTap={{ scale: 0.95 }}
+        style={
+          {
+            "--hover-color": document.documentElement.classList.contains("dark")
+              ? "#1d4ed8"
+              : "#2563eb",
+          } as React.CSSProperties
+        }
+      >
+        <MessageSquarePlus className="w-6 h-6" />
+      </motion.button>
     </div>
   );
 };
