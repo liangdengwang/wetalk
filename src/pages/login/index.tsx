@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
-import BgWebM from "../../assets/videos/login_page_bg.webm";
-import BgVideo from "../../assets/videos/login_page_bg.mp4";
+import BgWebM from "../../assets/videos/bg-video.webm";
+import BgVideo from "../../assets/videos/bg-video.mp4";
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useUserStore } from "../../store";
 
@@ -206,7 +206,7 @@ const Login = () => {
                 type="submit"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="btn btn-rounded bg-blue-700 w-full mt-4 shadow-lg border-none hover:shadow-blue-700/50 transition-all duration-300"
+                className="btn btn-rounded bg-blue-700 text-white w-full mt-4 shadow-lg border-none hover:shadow-blue-700/50 transition-all duration-300"
               >
                 {isLogin ? "登录" : "注册"}{" "}
                 <ArrowRight className="w-5 h-5 ml-2" />
