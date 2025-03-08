@@ -36,7 +36,8 @@ const Login = () => {
             pathname: string;
           };
         }
-        const from = (location.state as LocationState)?.from?.pathname || "/";
+        const from =
+          (location.state as LocationState)?.from?.pathname || "/chat";
         navigate(from);
       }
     } else {

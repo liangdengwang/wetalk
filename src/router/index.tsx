@@ -11,7 +11,7 @@ const RouterConfig: React.FC = () => (
 
     {/* 私有路由 */}
     <Route element={<PrivateRoute />}>
-      <Route path="/" element={<Home />} />
+      <Route path="/chat" element={<Home />} />
       <Route path="/setting" element={<Setting />} />
     </Route>
 
