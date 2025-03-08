@@ -1,25 +1,15 @@
-import { NavLink } from "react-router";
-import { motion } from "motion/react";
-import { useUserStore } from "../../store";
+import React from "react";
+import Layout from "../../components/Layout";
+import SettingList from "../../components/SettingList";
+import SettingDetail from "../../components/SettingDetail";
 
-const About: React.FC = () => {
-  const logout = useUserStore((state) => state.logout);
+const Setting: React.FC = () => {
   return (
-    <div className="w-screen h-screen flex flex-col justify-center items-center bg-gray-100 gap-4">
-      <motion.h1
-        animate={{ rotate: -360 }}
-        className="text-6xl font-bold text-gray-800"
-      >
-        Setting
-      </motion.h1>
-      <NavLink to="/">
-        <button className="btn">click to Home</button>
-      </NavLink>
-      <button className="btn" onClick={logout}>
-        Logout
-      </button>
-    </div>
+    <Layout
+      centerSlot={<SettingList className="h-full" />}
+      rightSlot={<SettingDetail className="h-full" />}
+    />
   );
 };
 
-export default About;
+export default Setting;

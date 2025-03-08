@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, ReactNode } from "react";
 import { motion } from "motion/react";
 import Sidebar from "./Sidebar";
-import ChatList from "./ChatList";
-import ChatArea from "./ChatArea";
 
-const Layout: React.FC = () => {
-  const [chatListWidth, setChatListWidth] = useState(280);
+interface LayoutProps {
+  centerSlot?: ReactNode; // 中间列表区域的插槽
+  rightSlot?: ReactNode; // 右侧内容区域的插槽
+}
+
+const Layout: React.FC<LayoutProps> = ({ centerSlot, rightSlot }) => {
+  const [centerWidth, setCenterWidth] = useState(280); // 默认宽度
   const [isDragging, setIsDragging] = useState(false);
 
   // 处理拖拽调整宽度
@@ -18,7 +21,7 @@ const Layout: React.FC = () => {
       const newWidth = e.clientX;
       // 限制最小和最大宽度
       if (newWidth > 200 && newWidth < 400) {
-        setChatListWidth(newWidth);
+        setCenterWidth(newWidth);
       }
     }
   };
@@ -37,8 +40,10 @@ const Layout: React.FC = () => {
       {/* 左边固定的导航栏区域 */}
       <Sidebar />
 
-      {/* 中间可拖拽的聊天列表区域 */}
-      <ChatList className="w-[280px]" style={{ width: chatListWidth }} />
+      {/* 中间可拖拽的列表区域 */}
+      <div style={{ width: centerWidth }} className="h-full">
+        {centerSlot}
+      </div>
 
       {/* 拖拽调整器 */}
       <motion.div
@@ -48,8 +53,8 @@ const Layout: React.FC = () => {
         whileTap={{ backgroundColor: "#2563eb" }}
       />
 
-      {/* 右边固定的聊天区域 */}
-      <ChatArea className="flex-1" />
+      {/* 右边固定的内容区域 */}
+      <div className="flex-1 h-full">{rightSlot}</div>
     </div>
   );
 };
