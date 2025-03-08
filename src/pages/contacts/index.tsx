@@ -1,7 +1,7 @@
 import React from "react";
 import Layout from "../../components/common/Layout";
-import ContactList from "../../components/conract/ContactList";
-import ContactDetail from "../../components/conract/ContactDetail";
+import ContactList from "../../components/contact/ContactList";
+import ContactDetail from "../../components/contact/ContactDetail";
 
 const ContactsPage: React.FC = () => {
   return (
