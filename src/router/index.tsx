@@ -12,10 +12,17 @@ const RouterConfig: React.FC = () => (
 
     {/* 私有路由 */}
     <Route element={<PrivateRoute />}>
+      {/* 聊天相关路由 */}
       <Route path="/chat" element={<Home />} />
       <Route path="/chat/:contactId" element={<Home />} />
+      <Route path="/chat/group/:groupId" element={<Home />} />
+
+      {/* 联系人相关路由 */}
       <Route path="/contacts" element={<ContactsPage />} />
       <Route path="/contacts/:contactId" element={<ContactsPage />} />
+      <Route path="/groups/:groupId" element={<ContactsPage />} />
+
+      {/* 设置相关路由 */}
       <Route path="/setting" element={<Setting />} />
       <Route path="/setting/:settingId" element={<Setting />} />
     </Route>
