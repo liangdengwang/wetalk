@@ -2,12 +2,28 @@
 @plugin "daisyui";
 
 @theme {
-  --color-primary: #5368f1;
-  --color-ghost: red;
+  --color-primary: #2c45d5;
   --font-design: "design";
 }
 
 @font-face {
   font-family: "design";
   src: url("./assets/fonts/PoiretOne-Regular.ttf");
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root,
+.App {
+  height: 100%;
+  width: 100%;
 }
