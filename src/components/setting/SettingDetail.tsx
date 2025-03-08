@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { useParams } from "react-router";
-import { useUserStore } from "../store/index";
+import { useUserStore } from "../../store/index";
 import { LogOut, Save } from "lucide-react";
 
 interface SettingDetailProps {

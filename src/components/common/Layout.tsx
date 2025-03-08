@@ -1,6 +1,6 @@
 import React, { useState, ReactNode } from "react";
 import { motion } from "motion/react";
-import Sidebar from "./Sidebar";
+import Sidebar from "../setting/Sidebar";
 
 interface LayoutProps {
   centerSlot?: ReactNode; // 中间列表区域的插槽
