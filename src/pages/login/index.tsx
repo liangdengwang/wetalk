@@ -5,9 +5,10 @@ import BgWebM from "../../assets/videos/bg-video.webm";
 import BgVideo from "../../assets/videos/bg-video.mp4";
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useUserStore, useThemeStore } from "../../store";
+import { ROUTE_CONFIG } from "../../utils/config";
 
 export type FormData = {
-  email: string;
+  username: string;
   password: string;
   repassword?: string;
 };
@@ -22,7 +23,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showRePassword, setShowRePassword] = useState<boolean>(false);
   const [formDate, setFormDate] = useState<FormData>({
-    email: "",
+    username: "",
     password: "",
     repassword: "",
   });
@@ -57,7 +58,7 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLogin) {
-      const success = await login(formDate.email, formDate.password);
+      const success = await login(formDate.username, formDate.password);
       if (success) {
         interface LocationState {
           from?: {
@@ -65,7 +66,8 @@ const Login = () => {
           };
         }
         const from =
-          (location.state as LocationState)?.from?.pathname || "/chat";
+          (location.state as LocationState)?.from?.pathname ||
+          ROUTE_CONFIG.DEFAULT_REDIRECT;
         navigate(from);
       }
     } else {
@@ -169,16 +171,16 @@ const Login = () => {
                 <div className="relative w-full">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-700 w-5 h-5" />
                   <input
-                    type="email"
-                    placeholder="在此输入您的电子邮件"
+                    type="text"
+                    placeholder="在此输入您的用户名"
                     className={`input input-bordered w-full text-blue-700 ${
                       isDarkMode
                         ? "bg-gray-700/50 border-gray-600"
                         : "bg-white/5 border-blue-700"
                     } focus:border-blue-700 transition-all duration-300 placeholder:text-gray-500 pl-10`}
-                    value={formDate.email}
+                    value={formDate.username}
                     onChange={(e) =>
-                      setFormDate({ ...formDate, email: e.target.value })
+                      setFormDate({ ...formDate, username: e.target.value })
                     }
                   />
                 </div>
