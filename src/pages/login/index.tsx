@@ -17,11 +17,13 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const login = useUserStore((state) => state.login);
+  const register = useUserStore((state) => state.register);
   const themeMode = useThemeStore((state) => state.mode);
 
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showRePassword, setShowRePassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [formDate, setFormDate] = useState<FormData>({
     username: "",
     password: "",
@@ -57,25 +59,56 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLogin) {
-      const success = await login(formDate.username, formDate.password);
-      if (success) {
-        interface LocationState {
-          from?: {
-            pathname: string;
-          };
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        // 登录逻辑
+        const success = await login(formDate.username, formDate.password);
+        if (success) {
+          alert("登录成功！");
+          interface LocationState {
+            from?: {
+              pathname: string;
+            };
+          }
+          const from =
+            (location.state as LocationState)?.from?.pathname ||
+            ROUTE_CONFIG.DEFAULT_REDIRECT;
+          navigate(from);
+        } else {
+          alert("登录失败，请检查用户名和密码");
         }
-        const from =
-          (location.state as LocationState)?.from?.pathname ||
-          ROUTE_CONFIG.DEFAULT_REDIRECT;
-        navigate(from);
+      } else {
+        // 注册逻辑
+        if (formDate.password !== formDate.repassword) {
+          alert("两次输入的密码不一致");
+          return;
+        }
+
+        if (formDate.username.length < 3) {
+          alert("用户名至少需要3个字符");
+          return;
+        }
+
+        if (formDate.password.length < 6) {
+          alert("密码至少需要6个字符");
+          return;
+        }
+
+        const success = await register(formDate.username, formDate.password);
+        if (success) {
+          alert("注册成功！正在跳转...");
+          navigate(ROUTE_CONFIG.DEFAULT_REDIRECT);
+        } else {
+          alert("注册失败，该用户名可能已被使用");
+        }
       }
-    } else {
-      if (formDate.password !== formDate.repassword) {
-        alert("两次输入的密码不一致");
-        return;
-      }
-      alert("注册功能暂未实现");
+    } catch (error) {
+      console.error(error);
+      alert(isLogin ? "登录失败" : "注册失败");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -256,9 +289,16 @@ const Login = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="btn btn-rounded bg-blue-700 text-white w-full mt-4 shadow-lg border-none hover:shadow-blue-700/50 transition-all duration-300"
+                disabled={loading}
               >
-                {isLogin ? "登录" : "注册"}{" "}
-                <ArrowRight className="w-5 h-5 ml-2" />
+                {loading ? (
+                  <span className="loading loading-spinner loading-sm"></span>
+                ) : (
+                  <>
+                    {isLogin ? "登录" : "注册"}{" "}
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </>
+                )}
               </motion.button>
             </motion.form>
           </motion.div>

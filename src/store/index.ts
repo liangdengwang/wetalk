@@ -16,6 +16,7 @@ interface UserStore {
     token: string;
   } | null;
   login: (username: string, password: string) => Promise<boolean>;
+  register: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -66,6 +67,37 @@ const useUserStore = create(
           return false;
         } catch (error) {
           console.error("登录失败:", error);
+          return false;
+        }
+      },
+      register: async (username: string, password: string) => {
+        try {
+          const response = await api.post("/auth/register", {
+            user_name: username,
+            password: password,
+          });
+
+          // 处理嵌套数据结构 {code, data: {userId, username, token}, message}
+          if (
+            response.data &&
+            response.data.code === 200 &&
+            response.data.data
+          ) {
+            const userData = response.data.data;
+
+            set({
+              isLoggedIn: true,
+              userInfo: {
+                userId: userData.userId,
+                username: userData.username,
+                token: userData.token,
+              },
+            });
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error("注册失败:", error);
           return false;
         }
       },
