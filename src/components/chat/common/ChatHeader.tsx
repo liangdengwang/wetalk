@@ -2,14 +2,14 @@ import React from "react";
 import { Users, Info, Hash, Bell, Pin, Inbox } from "lucide-react";
 
 interface Contact {
-  id: number;
+  id: string;
   name: string;
   status: string;
   avatar: string;
 }
 
 interface Group {
-  id: number;
+  id: string;
   name: string;
   avatar: string;
   memberCount: number;

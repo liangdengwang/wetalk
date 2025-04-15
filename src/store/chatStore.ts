@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware";
 export interface Message {
   id: number;
   sender: "me" | "other";
-  senderId?: number;
+  senderId?: string;
   senderName?: string;
   senderAvatar?: string;
   content: string;
@@ -16,7 +16,7 @@ export interface Message {
 
 // 聊天项接口
 export interface ChatItem {
-  id: number;
+  id: string;
   name: string;
   lastMessage: string;
   time: string;
@@ -31,34 +31,43 @@ interface ChatStore {
   chatList: ChatItem[];
 
   // 消息数据，key 是聊天 ID
-  messages: Record<number, Message[]>;
+  messages: Record<string, Message[]>;
 
   // 添加新消息
-  addMessage: (chatId: number, message: Message) => void;
+  addMessage: (chatId: string, message: Message) => void;
 
   // 标记聊天为已读
-  markAsRead: (chatId: number) => void;
+  markAsRead: (chatId: string) => void;
 
   // 获取聊天的消息
-  getMessages: (chatId: number) => Message[];
+  getMessages: (chatId: string) => Message[];
 
   // 获取聊天项
-  getChatItem: (chatId: number, isGroup: boolean) => ChatItem | undefined;
+  getChatItem: (chatId: string, isGroup: boolean) => ChatItem | undefined;
 
   // 更新聊天列表中的最后一条消息
-  updateLastMessage: (chatId: number, content: string) => void;
+  updateLastMessage: (chatId: string, content: string) => void;
 
   // 删除消息（仅在视图中标记为删除）
-  deleteMessage: (chatId: number, messageId: number) => void;
+  deleteMessage: (chatId: string, messageId: number) => void;
 
   // 撤回消息（仅限2分钟内的自己发送的消息）
-  recallMessage: (chatId: number, messageId: number) => boolean;
+  recallMessage: (chatId: string, messageId: number) => boolean;
+
+  // 添加或更新聊天项
+  addOrUpdateChatItem: (item: {
+    id: string;
+    name: string;
+    avatar: string;
+    isGroup: boolean;
+    memberCount?: number;
+  }) => void;
 }
 
 // 初始聊天列表数据
 const initialChatList: ChatItem[] = [
   {
-    id: 1,
+    id: "1",
     name: "张三",
     lastMessage: "你好，最近怎么样？",
     time: "10:30",
@@ -67,7 +76,7 @@ const initialChatList: ChatItem[] = [
     isGroup: false,
   },
   {
-    id: 2,
+    id: "2",
     name: "李四",
     lastMessage: "项目进展如何？",
     time: "昨天",
@@ -76,7 +85,7 @@ const initialChatList: ChatItem[] = [
     isGroup: false,
   },
   {
-    id: 3,
+    id: "3",
     name: "王五",
     lastMessage: "周末有空一起吃饭吗？",
     time: "周三",
@@ -85,7 +94,7 @@ const initialChatList: ChatItem[] = [
     isGroup: false,
   },
   {
-    id: 101,
+    id: "101",
     name: "技术交流群",
     lastMessage: "李四: 你需要在父路由组件中添加<Outlet />组件。",
     time: "09:40",
@@ -94,7 +103,7 @@ const initialChatList: ChatItem[] = [
     isGroup: true,
   },
   {
-    id: 102,
+    id: "102",
     name: "产品讨论组",
     lastMessage: "孙八: 同意，注册流程太复杂了。",
     time: "14:30",
@@ -103,7 +112,7 @@ const initialChatList: ChatItem[] = [
     isGroup: true,
   },
   {
-    id: 4,
+    id: "4",
     name: "赵六",
     lastMessage: "收到，我待会儿看看。",
     time: "09:22",
@@ -112,7 +121,7 @@ const initialChatList: ChatItem[] = [
     isGroup: false,
   },
   {
-    id: 103,
+    id: "103",
     name: "市场营销部",
     lastMessage: "李四: 不超过5万元。",
     time: "11:30",
@@ -123,8 +132,8 @@ const initialChatList: ChatItem[] = [
 ];
 
 // 初始消息数据
-const initialMessages: Record<number, Message[]> = {
-  1: [
+const initialMessages: Record<string, Message[]> = {
+  "1": [
     {
       id: 1,
       sender: "other",
@@ -156,7 +165,7 @@ const initialMessages: Record<number, Message[]> = {
       time: "10:35",
     },
   ],
-  2: [
+  "2": [
     { id: 1, sender: "other", content: "项目进展如何？", time: "昨天 15:20" },
     {
       id: 2,
@@ -171,7 +180,7 @@ const initialMessages: Record<number, Message[]> = {
       time: "昨天 15:30",
     },
   ],
-  3: [
+  "3": [
     {
       id: 1,
       sender: "me",
@@ -197,7 +206,7 @@ const initialMessages: Record<number, Message[]> = {
       time: "周三 18:25",
     },
   ],
-  4: [
+  "4": [
     {
       id: 1,
       sender: "other",
@@ -217,11 +226,11 @@ const initialMessages: Record<number, Message[]> = {
       time: "09:22",
     },
   ],
-  101: [
+  "101": [
     {
       id: 1,
       sender: "other",
-      senderId: 1,
+      senderId: "1",
       senderName: "张三",
       senderAvatar: "张",
       content: "大家好，有人遇到过React Router v6的问题吗？",
@@ -230,7 +239,7 @@ const initialMessages: Record<number, Message[]> = {
     {
       id: 2,
       sender: "other",
-      senderId: 3,
+      senderId: "3",
       senderName: "王五",
       senderAvatar: "王",
       content: "什么问题？可以详细说说吗？",
@@ -245,7 +254,7 @@ const initialMessages: Record<number, Message[]> = {
     {
       id: 4,
       sender: "other",
-      senderId: 1,
+      senderId: "1",
       senderName: "张三",
       senderAvatar: "张",
       content: "我在使用嵌套路由时，子路由无法正确匹配。",
@@ -254,18 +263,18 @@ const initialMessages: Record<number, Message[]> = {
     {
       id: 5,
       sender: "other",
-      senderId: 4,
+      senderId: "4",
       senderName: "李四",
       senderAvatar: "李",
       content: "你需要在父路由组件中添加<Outlet />组件。",
       time: "09:40",
     },
   ],
-  102: [
+  "102": [
     {
       id: 1,
       sender: "other",
-      senderId: 5,
+      senderId: "5",
       senderName: "赵六",
       senderAvatar: "赵",
       content: "大家觉得我们的注册流程如何？",
@@ -280,18 +289,18 @@ const initialMessages: Record<number, Message[]> = {
     {
       id: 3,
       sender: "other",
-      senderId: 8,
+      senderId: "8",
       senderName: "孙八",
       senderAvatar: "孙",
       content: "同意，注册流程太复杂了。",
       time: "14:30",
     },
   ],
-  103: [
+  "103": [
     {
       id: 1,
       sender: "other",
-      senderId: 3,
+      senderId: "3",
       senderName: "王五",
       senderAvatar: "王",
       content: "下个季度的营销预算是多少？",
@@ -306,7 +315,7 @@ const initialMessages: Record<number, Message[]> = {
     {
       id: 3,
       sender: "other",
-      senderId: 4,
+      senderId: "4",
       senderName: "李四",
       senderAvatar: "李",
       content: "不超过5万元。",
@@ -562,6 +571,60 @@ const useChatStore = create(
         });
 
         return true;
+      },
+
+      // 添加或更新聊天项
+      addOrUpdateChatItem: (item) => {
+        const { chatList, messages } = get();
+
+        // 检查聊天项是否已存在
+        const existingChatIndex = chatList.findIndex(
+          (chat) => chat.id === item.id && chat.isGroup === item.isGroup
+        );
+
+        if (existingChatIndex !== -1) {
+          // 如果已存在，则更新
+          const updatedChatList = [...chatList];
+          updatedChatList[existingChatIndex] = {
+            ...updatedChatList[existingChatIndex],
+            name: item.name,
+            avatar: item.avatar,
+          };
+
+          set({ chatList: updatedChatList });
+          return;
+        }
+
+        // 如果不存在，则添加
+        const newChatItem: ChatItem = {
+          id: item.id,
+          name: item.name,
+          avatar: item.avatar,
+          isGroup: item.isGroup,
+          lastMessage: "无新消息",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          unread: 0,
+        };
+
+        // 确保消息数组存在
+        if (!messages[item.id]) {
+          const updatedMessages = {
+            ...messages,
+            [item.id]: [],
+          };
+
+          set({
+            chatList: [newChatItem, ...chatList],
+            messages: updatedMessages,
+          });
+        } else {
+          set({
+            chatList: [newChatItem, ...chatList],
+          });
+        }
       },
     }),
     {

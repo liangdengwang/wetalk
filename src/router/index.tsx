@@ -14,8 +14,8 @@ const RouterConfig: React.FC = () => (
     <Route element={<PrivateRoute />}>
       {/* 聊天相关路由 */}
       <Route path="/chat" element={<Home />} />
-      <Route path="/chat/:contactId" element={<Home />} />
       <Route path="/chat/group/:groupId" element={<Home />} />
+      <Route path="/chat/:contactId" element={<Home />} />
 
       {/* 联系人相关路由 */}
       <Route path="/contacts" element={<ContactsPage />} />

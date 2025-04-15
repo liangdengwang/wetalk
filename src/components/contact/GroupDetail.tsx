@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import {
   MessageSquare,
   Phone,
@@ -16,6 +16,7 @@ import {
   processGroupDetailResponse,
 } from "../../utils/group";
 import api from "../../utils/api";
+import useChatStore from "../../store/chatStore";
 
 interface GroupDetailProps {
   className?: string;
@@ -31,6 +32,10 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
   error: initialError = null,
 }) => {
   const { groupId } = useParams();
+  const navigate = useNavigate();
+  const addOrUpdateChatItem = useChatStore(
+    (state) => state.addOrUpdateChatItem
+  );
 
   // 本地状态 - 用于获取单个群组的详细信息
   const [groupDetail, setGroupDetail] = useState<GroupDetailType | null>(null);
@@ -66,6 +71,36 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
 
     fetchGroupDetail();
   }, [groupId]);
+
+  // 处理点击发消息按钮
+  const handleMessageClick = () => {
+    if (groupId) {
+      // 获取群组信息，优先使用groupDetail，如果没有则从groups中获取
+      const group = groupDetail || groups.find((g) => g.id === groupId);
+
+      if (group) {
+        // 添加群组到聊天列表
+        addOrUpdateChatItem({
+          id: groupId,
+          name: group.name,
+          avatar: group.avatar || "群",
+          isGroup: true,
+          memberCount: (group as GroupDetailType).members?.length || 0,
+        });
+      } else {
+        // 如果没有群组信息，使用默认值
+        addOrUpdateChatItem({
+          id: groupId,
+          name: `群聊 ${groupId}`,
+          avatar: "群",
+          isGroup: true,
+        });
+      }
+
+      // 导航到聊天页面
+      navigate(`/chat/group/${groupId}`);
+    }
+  };
 
   // 渲染加载状态
   if (loading) {
@@ -180,6 +215,7 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
             whileHover={{ scale: 1.05, backgroundColor: "#2563eb" }}
             whileTap={{ scale: 0.95 }}
             className="flex-1 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg flex items-center justify-center"
+            onClick={handleMessageClick}
           >
             <MessageSquare className="w-5 h-5 mr-2" />
             发消息

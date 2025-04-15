@@ -16,7 +16,7 @@ interface ChatAreaProps {
 
 // 定义联系人接口
 interface Contact {
-  id: number;
+  id: string;
   name: string;
   status: string;
   avatar: string;
@@ -24,7 +24,7 @@ interface Contact {
 
 // 定义群聊接口
 interface Group {
-  id: number;
+  id: string;
   name: string;
   avatar: string;
   memberCount: number;
@@ -37,11 +37,12 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "" }) => {
 
   // 计算当前聊天ID
   const chatId = useMemo(() => {
-    return isGroup ? Number(groupId) : Number(contactId);
+    return isGroup ? groupId : contactId;
   }, [contactId, groupId, isGroup]);
 
   // 使用聊天状态管理
   const messages = useChatStore((state) => state.messages);
+  const chatList = useChatStore((state) => state.chatList);
   const markAsRead = useChatStore((state) => state.markAsRead);
   const addMessage = useChatStore((state) => state.addMessage);
   const deleteMessage = useChatStore((state) => state.deleteMessage);
@@ -49,46 +50,49 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "" }) => {
 
   // 获取当前聊天的消息
   const chatMessages = useMemo(() => {
-    return messages[chatId] || [];
+    return chatId ? messages[chatId] || [] : [];
   }, [messages, chatId]);
-
-  // 模拟联系人数据
-  const contacts: Contact[] = [
-    { id: 1, name: "张三", status: "在线", avatar: "张" },
-    { id: 2, name: "李四", status: "离线", avatar: "李" },
-    { id: 3, name: "王五", status: "忙碌", avatar: "王" },
-    { id: 4, name: "赵六", status: "在线", avatar: "赵" },
-  ];
-
-  // 模拟群聊数据
-  const groups: Group[] = [
-    { id: 101, name: "技术交流群", avatar: "技", memberCount: 25 },
-    { id: 102, name: "产品讨论组", avatar: "产", memberCount: 12 },
-    { id: 103, name: "市场营销部", avatar: "市", memberCount: 18 },
-  ];
 
   // 当路由参数变化时，更新当前聊天对象
   useEffect(() => {
     if (contactId) {
-      const contact = contacts.find((c) => c.id === Number(contactId));
-      if (contact) {
-        setCurrentChat(contact);
+      // 从聊天列表中查找联系人
+      const chatItem = chatList.find(
+        (chat) => chat.id === contactId && !chat.isGroup
+      );
+
+      if (chatItem) {
+        setCurrentChat({
+          id: chatItem.id,
+          name: chatItem.name,
+          status: "online", // 默认状态
+          avatar: chatItem.avatar,
+        });
         setIsGroup(false);
       }
     } else if (groupId) {
-      const group = groups.find((g) => g.id === Number(groupId));
-      if (group) {
-        setCurrentChat(group);
+      // 从聊天列表中查找群组
+      const chatItem = chatList.find(
+        (chat) => chat.id === groupId && chat.isGroup
+      );
+
+      if (chatItem) {
+        setCurrentChat({
+          id: chatItem.id,
+          name: chatItem.name,
+          avatar: chatItem.avatar,
+          memberCount: 0, // 默认成员数
+        });
         setIsGroup(true);
       }
     } else {
       setCurrentChat(null);
     }
-  }, [contactId, groupId]);
+  }, [contactId, groupId, chatList]);
 
   // 标记为已读的效果
   useEffect(() => {
-    if (chatId && !isNaN(chatId)) {
+    if (chatId) {
       markAsRead(chatId);
     }
   }, [chatId, markAsRead]);
@@ -134,14 +138,14 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "" }) => {
 
   // 删除消息
   const handleDeleteMessage = useCallback(() => {
-    if (contextMenu.messageId && chatId && !isNaN(chatId)) {
+    if (contextMenu.messageId && chatId) {
       deleteMessage(chatId, contextMenu.messageId);
     }
   }, [contextMenu.messageId, chatId, deleteMessage]);
 
   // 撤回消息
   const handleRecallMessage = useCallback(() => {
-    if (contextMenu.messageId && chatId && !isNaN(chatId)) {
+    if (contextMenu.messageId && chatId) {
       recallMessage(chatId, contextMenu.messageId);
     }
   }, [contextMenu.messageId, chatId, recallMessage]);
@@ -202,7 +206,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "" }) => {
   // 处理发送消息
   const handleSendMessage = useCallback(
     (content: string) => {
-      if (content && currentChat && chatId && !isNaN(chatId)) {
+      if (content && currentChat && chatId) {
         const newMessage: Message = {
           id: chatMessages.length + 1,
           sender: "me",
@@ -223,7 +227,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "" }) => {
   // 处理表情选择
   const handleEmojiSelect = useCallback(
     (emoji: string) => {
-      if (currentChat && chatId && !isNaN(chatId)) {
+      if (currentChat && chatId) {
         // 直接发送表情消息
         const newMessage: Message = {
           id: chatMessages.length + 1,

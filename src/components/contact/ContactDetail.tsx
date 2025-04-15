@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import {
   MessageSquare,
   Phone,
@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Contact } from "../../utils/contact";
+import useChatStore from "../../store/chatStore";
 
 interface ContactDetailProps {
   className?: string;
@@ -29,9 +30,40 @@ const ContactDetail: React.FC<ContactDetailProps> = ({
   error = null,
 }) => {
   const { contactId } = useParams();
+  const navigate = useNavigate();
+  const addOrUpdateChatItem = useChatStore(
+    (state) => state.addOrUpdateChatItem
+  );
 
   // 根据ID查找当前联系人
   const currentContact = contacts.find((contact) => contact.id === contactId);
+
+  // 处理点击发消息按钮
+  const handleMessageClick = () => {
+    if (contactId && currentContact) {
+      // 添加联系人到聊天列表
+      addOrUpdateChatItem({
+        id: contactId,
+        name: currentContact.name,
+        avatar: currentContact.avatar || currentContact.name.charAt(0),
+        isGroup: false,
+      });
+
+      // 导航到聊天页面
+      navigate(`/chat/${contactId}`);
+    } else if (contactId) {
+      // 如果没有联系人信息，使用默认值
+      addOrUpdateChatItem({
+        id: contactId,
+        name: `联系人 ${contactId}`,
+        avatar: "用",
+        isGroup: false,
+      });
+
+      // 导航到聊天页面
+      navigate(`/chat/${contactId}`);
+    }
+  };
 
   // 渲染加载状态
   if (loading) {
@@ -145,6 +177,7 @@ const ContactDetail: React.FC<ContactDetailProps> = ({
             whileHover={{ scale: 1.05, backgroundColor: "#2563eb" }}
             whileTap={{ scale: 0.95 }}
             className="flex-1 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg flex items-center justify-center"
+            onClick={handleMessageClick}
           >
             <MessageSquare className="w-5 h-5 mr-2" />
             发消息
