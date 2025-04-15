@@ -13,64 +13,50 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
+import { Contact } from "../../utils/contact";
 
 interface ContactDetailProps {
   className?: string;
+  contacts?: Contact[]; // 从API获取的联系人列表
+  loading?: boolean; // 加载状态
+  error?: string | null; // 错误信息
 }
 
-const ContactDetail: React.FC<ContactDetailProps> = ({ className = "" }) => {
+const ContactDetail: React.FC<ContactDetailProps> = ({
+  className = "",
+  contacts = [],
+  loading = false,
+  error = null,
+}) => {
   const { contactId } = useParams();
 
-  // 模拟联系人数据
-  const contacts = [
-    {
-      id: 1,
-      name: "张三",
-      status: "在线",
-      avatar: "张",
-      phone: "13800138000",
-      email: "zhangsan@example.com",
-      address: "北京市海淀区中关村大街1号",
-      company: "科技有限公司",
-      position: "产品经理",
-      birthday: "1990-01-01",
-      notes: "重要客户，需要定期跟进",
-      isFavorite: true,
-    },
-    {
-      id: 2,
-      name: "李四",
-      status: "离线",
-      avatar: "李",
-      phone: "13900139000",
-      email: "lisi@example.com",
-      address: "上海市浦东新区张江高科技园区",
-      company: "互联网科技公司",
-      position: "前端开发工程师",
-      birthday: "1992-05-15",
-      notes: "技术专家，可以咨询前端问题",
-      isFavorite: false,
-    },
-    {
-      id: 3,
-      name: "王五",
-      status: "忙碌",
-      avatar: "王",
-      phone: "13700137000",
-      email: "wangwu@example.com",
-      address: "广州市天河区珠江新城",
-      company: "金融科技公司",
-      position: "后端开发工程师",
-      birthday: "1988-10-20",
-      notes: "系统架构师，擅长分布式系统设计",
-      isFavorite: true,
-    },
-  ];
-
   // 根据ID查找当前联系人
-  const currentContact = contacts.find(
-    (contact) => contact.id.toString() === contactId
-  );
+  const currentContact = contacts.find((contact) => contact.id === contactId);
+
+  // 渲染加载状态
+  if (loading) {
+    return (
+      <div
+        className={`h-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 ${className}`}
+      >
+        <div className="loading loading-spinner loading-lg text-blue-600"></div>
+      </div>
+    );
+  }
+
+  // 渲染错误状态
+  if (error) {
+    return (
+      <div
+        className={`h-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 ${className}`}
+      >
+        <div className="text-red-500 text-center">
+          <p className="text-lg font-bold mb-2">出错了</p>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   // 如果没有找到联系人，显示空状态
   if (!currentContact) {
@@ -125,7 +111,9 @@ const ContactDetail: React.FC<ContactDetailProps> = ({ className = "" }) => {
                 )}
               </div>
               <p className="text-gray-600 dark:text-gray-400">
-                {currentContact.position} @ {currentContact.company}
+                {currentContact.position
+                  ? `${currentContact.position} @ ${currentContact.company}`
+                  : ""}
               </p>
               <span
                 className={`inline-block mt-1 text-xs px-2 py-1 rounded-full ${
@@ -180,113 +168,141 @@ const ContactDetail: React.FC<ContactDetailProps> = ({ className = "" }) => {
         </div>
       </div>
 
-      {/* 联系人信息 */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="space-y-6">
-          {/* 联系方式 */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
-              联系方式
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <Phone className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    手机
-                  </p>
-                  <p className="text-gray-900 dark:text-white">
-                    {currentContact.phone}
-                  </p>
+      {/* 联系人信息 - 仅当有额外信息时显示 */}
+      {(currentContact.phone ||
+        currentContact.email ||
+        currentContact.address ||
+        currentContact.company ||
+        currentContact.position ||
+        currentContact.birthday ||
+        currentContact.notes) && (
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-6">
+            {/* 联系方式 */}
+            {(currentContact.phone ||
+              currentContact.email ||
+              currentContact.address) && (
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                  联系方式
+                </h3>
+                <div className="space-y-3">
+                  {currentContact.phone && (
+                    <div className="flex items-center">
+                      <Phone className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          手机
+                        </p>
+                        <p className="text-gray-900 dark:text-white">
+                          {currentContact.phone}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {currentContact.email && (
+                    <div className="flex items-center">
+                      <Mail className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          邮箱
+                        </p>
+                        <p className="text-gray-900 dark:text-white">
+                          {currentContact.email}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {currentContact.address && (
+                    <div className="flex items-center">
+                      <MapPin className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          地址
+                        </p>
+                        <p className="text-gray-900 dark:text-white">
+                          {currentContact.address}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center">
-                <Mail className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    邮箱
-                  </p>
-                  <p className="text-gray-900 dark:text-white">
-                    {currentContact.email}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <MapPin className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    地址
-                  </p>
-                  <p className="text-gray-900 dark:text-white">
-                    {currentContact.address}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+            )}
 
-          {/* 工作信息 */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
-              工作信息
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <Briefcase className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    公司
-                  </p>
-                  <p className="text-gray-900 dark:text-white">
-                    {currentContact.company}
-                  </p>
+            {/* 工作信息 */}
+            {(currentContact.company || currentContact.position) && (
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                  工作信息
+                </h3>
+                <div className="space-y-3">
+                  {currentContact.company && (
+                    <div className="flex items-center">
+                      <Briefcase className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          公司
+                        </p>
+                        <p className="text-gray-900 dark:text-white">
+                          {currentContact.company}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {currentContact.position && (
+                    <div className="flex items-center">
+                      <Briefcase className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          职位
+                        </p>
+                        <p className="text-gray-900 dark:text-white">
+                          {currentContact.position}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center">
-                <Briefcase className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    职位
-                  </p>
-                  <p className="text-gray-900 dark:text-white">
-                    {currentContact.position}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+            )}
 
-          {/* 个人信息 */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
-              个人信息
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <Calendar className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    生日
-                  </p>
-                  <p className="text-gray-900 dark:text-white">
-                    {currentContact.birthday}
-                  </p>
+            {/* 个人信息 */}
+            {currentContact.birthday && (
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                  个人信息
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <Calendar className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        生日
+                      </p>
+                      <p className="text-gray-900 dark:text-white">
+                        {currentContact.birthday}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* 备注 */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
-              备注
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-              {currentContact.notes}
-            </p>
+            {/* 备注 */}
+            {currentContact.notes && (
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                  备注
+                </h3>
+                <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                  {currentContact.notes}
+                </p>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
 
       {/* 底部操作栏 */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">

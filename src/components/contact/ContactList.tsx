@@ -5,30 +5,32 @@ import TabBar, { TabItem } from "../common/TabBar";
 import SearchBar from "../common/SearchBar";
 import ListItem from "../common/ListItem";
 import ActionButton from "../common/ActionButton";
+import { Contact as ContactType } from "../../utils/contact";
+import { Group as GroupType } from "../../utils/group";
 
 interface ContactListProps {
   className?: string;
   style?: React.CSSProperties;
+  contacts?: ContactType[]; // 从API获取的联系人列表
+  groups?: GroupType[]; // 从API获取的群组列表
+  loading?: boolean; // 联系人加载状态
+  groupsLoading?: boolean; // 群组加载状态
+  error?: string | null; // 联系人错误信息
+  groupsError?: string | null; // 群组错误信息
 }
 
-// 定义联系人和群聊的接口
-interface Contact {
-  id: number;
-  name: string;
-  status: string;
-  avatar: string;
-}
+type ListItem = ContactType | GroupType;
 
-interface Group {
-  id: number;
-  name: string;
-  members: number;
-  avatar: string;
-}
-
-type ListItem = Contact | Group;
-
-const ContactList: React.FC<ContactListProps> = ({ className = "", style }) => {
+const ContactList: React.FC<ContactListProps> = ({
+  className = "",
+  style,
+  contacts = [], // 默认为空数组
+  groups = [], // 默认为空数组
+  loading = false,
+  groupsLoading = false,
+  error = null,
+  groupsError = null,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"contacts" | "groups">("contacts");
   const navigate = useNavigate();
@@ -38,32 +40,6 @@ const ContactList: React.FC<ContactListProps> = ({ className = "", style }) => {
   const tabs: TabItem[] = [
     { id: "contacts", label: "联系人" },
     { id: "groups", label: "群聊" },
-  ];
-
-  // 模拟联系人列表数据
-  const contacts: Contact[] = [
-    { id: 1, name: "张三", status: "在线", avatar: "张" },
-    { id: 2, name: "李四", status: "离线", avatar: "李" },
-    { id: 3, name: "王五", status: "忙碌", avatar: "王" },
-    { id: 4, name: "赵六", status: "在线", avatar: "赵" },
-    { id: 5, name: "钱七", status: "离线", avatar: "钱" },
-    { id: 6, name: "孙八", status: "在线", avatar: "孙" },
-    { id: 7, name: "周九", status: "离线", avatar: "周" },
-    { id: 8, name: "吴十", status: "忙碌", avatar: "吴" },
-    { id: 9, name: "郑十一", status: "在线", avatar: "郑" },
-    { id: 10, name: "冯十二", status: "离线", avatar: "冯" },
-    { id: 11, name: "陈十三", status: "忙碌", avatar: "陈" },
-    { id: 12, name: "褚十四", status: "在线", avatar: "褚" },
-  ];
-
-  // 模拟群聊列表数据
-  const groups: Group[] = [
-    { id: 101, name: "产品讨论组", members: 8, avatar: "产" },
-    { id: 102, name: "技术交流群", members: 12, avatar: "技" },
-    { id: 103, name: "市场营销", members: 6, avatar: "市" },
-    { id: 104, name: "客户服务", members: 5, avatar: "客" },
-    { id: 105, name: "人力资源", members: 4, avatar: "人" },
-    { id: 106, name: "管理层", members: 3, avatar: "管" },
   ];
 
   // 根据搜索过滤列表
@@ -80,7 +56,7 @@ const ContactList: React.FC<ContactListProps> = ({ className = "", style }) => {
     activeTab === "contacts" ? filteredContacts : filteredGroups;
 
   // 处理列表项点击
-  const handleItemClick = (id: number) => {
+  const handleItemClick = (id: string) => {
     if (activeTab === "contacts") {
       navigate(`/contacts/${id}`);
     } else {
@@ -89,7 +65,7 @@ const ContactList: React.FC<ContactListProps> = ({ className = "", style }) => {
   };
 
   // 判断是否为联系人类型
-  const isContact = (item: ListItem): item is Contact => {
+  const isContact = (item: ListItem): item is ContactType => {
     return "status" in item;
   };
 
@@ -112,6 +88,68 @@ const ContactList: React.FC<ContactListProps> = ({ className = "", style }) => {
     setActiveTab(tabId as "contacts" | "groups");
   };
 
+  // 渲染加载状态 - 联系人
+  if (loading && activeTab === "contacts") {
+    return (
+      <div
+        className={`h-full flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${className}`}
+      >
+        <TabBar tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="loading loading-spinner loading-lg text-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // 渲染加载状态 - 群组
+  if (groupsLoading && activeTab === "groups") {
+    return (
+      <div
+        className={`h-full flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${className}`}
+      >
+        <TabBar tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="loading loading-spinner loading-lg text-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // 渲染错误状态 - 联系人
+  if (error && activeTab === "contacts") {
+    return (
+      <div
+        className={`h-full flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${className}`}
+      >
+        <TabBar tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-red-500 text-center">
+            <p className="text-lg font-bold mb-2">出错了</p>
+            <p>{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 渲染错误状态 - 群组
+  if (groupsError && activeTab === "groups") {
+    return (
+      <div
+        className={`h-full flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${className}`}
+      >
+        <TabBar tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-red-500 text-center">
+            <p className="text-lg font-bold mb-2">出错了</p>
+            <p>{groupsError}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`h-full flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${className}`}
@@ -133,8 +171,8 @@ const ContactList: React.FC<ContactListProps> = ({ className = "", style }) => {
           displayList.map((item) => {
             const isActive =
               activeTab === "contacts"
-                ? contactId === item.id.toString()
-                : groupId === item.id.toString();
+                ? contactId === item.id
+                : groupId === item.id;
 
             if (isContact(item)) {
               // 联系人项

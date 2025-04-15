@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { useParams } from "react-router";
 import {
@@ -9,96 +9,110 @@ import {
   UserPlus,
   Settings,
 } from "lucide-react";
+import {
+  Group,
+  GroupDetail as GroupDetailType,
+  GroupDetailResponse,
+  processGroupDetailResponse,
+} from "../../utils/group";
+import api from "../../utils/api";
 
 interface GroupDetailProps {
   className?: string;
+  groups?: Group[]; // 从API获取的群组列表
+  loading?: boolean; // 加载状态
+  error?: string | null; // 错误信息
 }
 
-const GroupDetail: React.FC<GroupDetailProps> = ({ className = "" }) => {
+const GroupDetail: React.FC<GroupDetailProps> = ({
+  className = "",
+  groups = [],
+  loading: initialLoading = false,
+  error: initialError = null,
+}) => {
   const { groupId } = useParams();
 
-  // 模拟群聊数据
-  const groups = [
-    {
-      id: 101,
-      name: "产品讨论组",
-      avatar: "产",
-      description: "讨论产品需求和功能规划的群组",
-      createdAt: "2023-01-15",
-      members: [
-        { id: 1, name: "张三", role: "群主", avatar: "张", status: "在线" },
-        { id: 2, name: "李四", role: "管理员", avatar: "李", status: "离线" },
-        { id: 3, name: "王五", role: "成员", avatar: "王", status: "忙碌" },
-        { id: 4, name: "赵六", role: "成员", avatar: "赵", status: "在线" },
-        { id: 5, name: "钱七", role: "成员", avatar: "钱", status: "离线" },
-        { id: 6, name: "孙八", role: "成员", avatar: "孙", status: "在线" },
-        { id: 7, name: "周九", role: "成员", avatar: "周", status: "离线" },
-        { id: 8, name: "吴十", role: "成员", avatar: "吴", status: "忙碌" },
-      ],
-    },
-    {
-      id: 102,
-      name: "技术交流群",
-      avatar: "技",
-      description: "讨论技术问题和分享技术文章的群组",
-      createdAt: "2023-02-20",
-      members: [
-        { id: 1, name: "张三", role: "群主", avatar: "张", status: "在线" },
-        { id: 2, name: "李四", role: "管理员", avatar: "李", status: "离线" },
-        { id: 3, name: "王五", role: "成员", avatar: "王", status: "忙碌" },
-        { id: 9, name: "郑十一", role: "成员", avatar: "郑", status: "在线" },
-        { id: 10, name: "冯十二", role: "成员", avatar: "冯", status: "离线" },
-        { id: 11, name: "陈十三", role: "成员", avatar: "陈", status: "忙碌" },
-        { id: 12, name: "褚十四", role: "成员", avatar: "褚", status: "在线" },
-      ],
-    },
-    {
-      id: 103,
-      name: "市场营销",
-      avatar: "市",
-      description: "讨论市场策略和营销活动的群组",
-      createdAt: "2023-03-10",
-      members: [
-        { id: 1, name: "张三", role: "群主", avatar: "张", status: "在线" },
-        { id: 4, name: "赵六", role: "管理员", avatar: "赵", status: "在线" },
-        { id: 5, name: "钱七", role: "成员", avatar: "钱", status: "离线" },
-        { id: 9, name: "郑十一", role: "成员", avatar: "郑", status: "在线" },
-        { id: 10, name: "冯十二", role: "成员", avatar: "冯", status: "离线" },
-        { id: 11, name: "陈十三", role: "成员", avatar: "陈", status: "忙碌" },
-      ],
-    },
-  ];
+  // 本地状态 - 用于获取单个群组的详细信息
+  const [groupDetail, setGroupDetail] = useState<GroupDetailType | null>(null);
+  const [loading, setLoading] = useState<boolean>(initialLoading);
+  const [error, setError] = useState<string | null>(initialError);
 
-  // 根据ID查找当前群聊
-  const currentGroup = groups.find((group) => group.id.toString() === groupId);
+  // 获取单个群组详情
+  useEffect(() => {
+    if (!groupId) return;
 
-  // 如果没有找到群聊，显示空状态
-  if (!currentGroup) {
+    const fetchGroupDetail = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get<GroupDetailResponse>(
+          `/groups/${groupId}`
+        );
+
+        // 处理返回的数据
+        const detail = processGroupDetailResponse(response.data);
+        if (detail) {
+          setGroupDetail(detail);
+          setError(null);
+        } else {
+          setError("获取群组详情失败");
+        }
+      } catch (err) {
+        console.error("获取群组详情失败:", err);
+        setError("获取群组详情失败");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroupDetail();
+  }, [groupId]);
+
+  // 渲染加载状态
+  if (loading) {
     return (
       <div
         className={`h-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 ${className}`}
       >
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          <p className="text-xl mb-2">请选择一个群聊</p>
-          <p className="text-sm">从左侧列表中选择一个群聊查看详情</p>
+        <div className="loading loading-spinner loading-lg text-blue-600"></div>
+      </div>
+    );
+  }
+
+  // 渲染错误状态
+  if (error) {
+    return (
+      <div
+        className={`h-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 ${className}`}
+      >
+        <div className="text-red-500 text-center">
+          <p className="text-lg font-bold mb-2">出错了</p>
+          <p>{error}</p>
         </div>
       </div>
     );
   }
 
-  // 获取状态对应的颜色
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "在线":
-        return "bg-green-500 dark:bg-green-600";
-      case "离线":
-        return "bg-gray-400 dark:bg-gray-500";
-      case "忙碌":
-        return "bg-orange-500 dark:bg-orange-600";
-      default:
-        return "bg-gray-400 dark:bg-gray-500";
+  // 如果没有找到群聊，显示空状态
+  if (!groupDetail) {
+    // 先尝试从传入的群组列表中查找
+    const groupFromList = groups.find((group) => group.id === groupId);
+
+    if (!groupFromList) {
+      return (
+        <div
+          className={`h-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 ${className}`}
+        >
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            <p className="text-xl mb-2">请选择一个群聊</p>
+            <p className="text-sm">从左侧列表中选择一个群聊查看详情</p>
+          </div>
+        </div>
+      );
     }
-  };
+  }
+
+  // 使用获取到的群组详情，如果没有则使用群组列表中的数据
+  const currentGroup = groupDetail;
 
   // 获取角色对应的颜色
   const getRoleColor = (role: string) => {
@@ -112,6 +126,22 @@ const GroupDetail: React.FC<GroupDetailProps> = ({ className = "" }) => {
     }
   };
 
+  // 格式化日期
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "未知日期";
+
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("zh-CN", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <div
       className={`h-full flex flex-col bg-white dark:bg-gray-800 ${className}`}
@@ -121,15 +151,15 @@ const GroupDetail: React.FC<GroupDetailProps> = ({ className = "" }) => {
         <div className="flex justify-between items-start">
           <div className="flex items-center">
             <div className="w-16 h-16 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center text-white text-2xl font-semibold mr-4">
-              {currentGroup.avatar}
+              {currentGroup?.avatar}
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {currentGroup.name}
+                {currentGroup?.name}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mt-1">
-                {currentGroup.members.length}人 · 创建于{" "}
-                {currentGroup.createdAt}
+                {currentGroup?.members?.length || 0}人 · 创建于{" "}
+                {formatDate(currentGroup?.createdAt)}
               </p>
             </div>
           </div>
@@ -177,65 +207,89 @@ const GroupDetail: React.FC<GroupDetailProps> = ({ className = "" }) => {
       <div className="flex-1 overflow-y-auto p-6">
         <div className="space-y-6">
           {/* 群聊描述 */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
-              群聊介绍
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-              {currentGroup.description}
-            </p>
-          </div>
+          {currentGroup?.description && (
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                群聊介绍
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                {currentGroup.description}
+              </p>
+            </div>
+          )}
+
+          {/* 群主信息 */}
+          {currentGroup?.owner && (
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                群主
+              </h3>
+              <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-red-500 dark:bg-red-600 flex items-center justify-center text-white font-medium mr-3">
+                  {currentGroup.owner.charAt(0)}
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {currentGroup.owner}
+                  </span>
+                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+                    群主
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 群成员 */}
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                群成员 ({currentGroup.members.length})
-              </h3>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="text-blue-600 dark:text-blue-400 flex items-center text-sm"
-              >
-                <UserPlus className="w-4 h-4 mr-1" />
-                添加成员
-              </motion.button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {currentGroup.members.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+          {currentGroup?.members && currentGroup.members.length > 0 && (
+            <div>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  群成员 ({currentGroup.members.length})
+                </h3>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="text-blue-600 dark:text-blue-400 flex items-center text-sm"
                 >
+                  <UserPlus className="w-4 h-4 mr-1" />
+                  添加成员
+                </motion.button>
+              </div>
+              <div className="space-y-2">
+                {currentGroup.members.map((member) => (
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold mr-3 ${getStatusColor(
-                      member.status
-                    )}`}
+                    key={member.id}
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                   >
-                    {member.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
                     <div className="flex items-center">
-                      <h4 className="font-medium text-gray-900 dark:text-white truncate">
-                        {member.name}
-                      </h4>
-                      <span
-                        className={`ml-2 text-xs px-2 py-0.5 rounded-full ${getRoleColor(
-                          member.role
-                        )}`}
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium mr-3 ${
+                          member.role === "群主"
+                            ? "bg-red-500 dark:bg-red-600"
+                            : "bg-gray-400 dark:bg-gray-500"
+                        }`}
                       >
-                        {member.role}
-                      </span>
+                        {member.avatar}
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {member.name}
+                        </span>
+                        <span
+                          className={`ml-2 text-xs px-2 py-0.5 rounded-full ${getRoleColor(
+                            member.role
+                          )}`}
+                        >
+                          {member.role}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {member.status}
-                    </p>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
