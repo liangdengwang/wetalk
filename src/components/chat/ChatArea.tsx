@@ -55,13 +55,14 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "" }) => {
 
   // 当路由参数变化时，更新当前聊天对象
   useEffect(() => {
-    if (contactId) {
+    if (contactId) {     
+           
       // 从聊天列表中查找联系人
       const chatItem = chatList.find(
-        (chat) => chat.id === contactId && !chat.isGroup
+        (chat) => chat.id == contactId && !chat.isGroup
       );
-
-      if (chatItem) {
+ 
+      if (chatItem) {     
         setCurrentChat({
           id: chatItem.id,
           name: chatItem.name,
@@ -70,12 +71,12 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "" }) => {
         });
         setIsGroup(false);
       }
-    } else if (groupId) {
+      
+    } else if (groupId) {   
       // 从聊天列表中查找群组
       const chatItem = chatList.find(
-        (chat) => chat.id === groupId && chat.isGroup
+        (chat) => chat.id == groupId && chat.isGroup
       );
-
       if (chatItem) {
         setCurrentChat({
           id: chatItem.id,
