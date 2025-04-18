@@ -6,8 +6,8 @@
 // API配置
 export const API_CONFIG = {
   // API基础URL
-  BASE_URL: "http://localhost:3000/api",
-  // BASE_URL: "http://8.137.125.187:3000/api",//线上地址
+  // BASE_URL: "http://localhost:3000/api",
+  BASE_URL: "http://8.137.125.187:3000/api",//线上地址
 
   // API超时时间（毫秒）
   TIMEOUT: 10000,
