@@ -18,13 +18,14 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const [isOpenEmojiPicker, setIsOpenEmojiPicker] = useState(false);
 
-  const handleIsVisibleEmojiPicker = (e) => {
+  const handleIsVisibleEmojiPicker = (e:React.MouseEvent<HTMLElement>) => {
     e.stopPropagation()
     setIsOpenEmojiPicker(!isOpenEmojiPicker);
   }
 
   const handleEmojiSelect = (emoji: string) => {
     setMessage((prevMessage) => prevMessage + emoji);
+    onEmojiSelect(emoji);
     setIsOpenEmojiPicker(false);
   }
 
