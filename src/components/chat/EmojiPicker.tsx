@@ -157,7 +157,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 ${className}`}
+      className={` w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 ${className}`}
       onClick={(e) => e.stopPropagation()} // 阻止事件冒泡到父元素
     >
       {/* 使用 TabBar 组件 */}
@@ -169,7 +169,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
 
       {/* 表情网格 */}
       <div className="p-2">
-        <div className="grid grid-cols-6 gap-1">
+        <div className="grid grid-cols-6 gap-1 min-h-[10vh] ">
           {getEmojisForCategory().map((emoji) => (
             <div key={emoji.id} className="relative">
               <motion.button

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Paperclip, Smile, Mic } from "lucide-react";
+import EmojiPicker from "../EmojiPicker";
 
 interface ChatInputProps {
   onSendMessage: (content: string) => void;
@@ -14,6 +15,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const [isOpenEmojiPicker, setIsOpenEmojiPicker] = useState(false);
+
+  const handleIsVisibleEmojiPicker = (e) => {
+    e.stopPropagation()
+    setIsOpenEmojiPicker(!isOpenEmojiPicker);
+  }
+
+  const handleEmojiSelect = (emoji: string) => {
+    setMessage((prevMessage) => prevMessage + emoji);
+    setIsOpenEmojiPicker(false);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +53,21 @@ const ChatInput: React.FC<ChatInputProps> = ({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [message]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isOpenEmojiPicker &&
+        !event.composedPath().includes(textareaRef.current as Node)&&//这个是判断点击的元素是否在textareaRef.current这个元素内部，如果是，则不执行下面的代码
+        !event.composedPath().includes(emojiPickerRef.current as Node)
+      ) {
+        setIsOpenEmojiPicker(false);
+      }
+    };
+  
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isOpenEmojiPicker]);
 
   return (
     <div
@@ -68,10 +96,17 @@ const ChatInput: React.FC<ChatInputProps> = ({
             <button
               type="button"
               className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 mx-1"
-              onClick={() => onEmojiSelect("😊")}
+              onClick={handleIsVisibleEmojiPicker}
             >
               <Smile className="w-5 h-5" />
             </button>
+            {isOpenEmojiPicker && (
+              <div ref={emojiPickerRef} className="absolute bottom-25 right-30 z-10">
+                <EmojiPicker
+                  onEmojiSelect={handleEmojiSelect}
+                />
+              </div>
+            )}
 
             <button
               type="button"
