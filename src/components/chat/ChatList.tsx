@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Search, MessageSquarePlus } from "lucide-react";
+import { Search, MessageSquarePlus, MessageCircle, Users } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import useChatStore, { ChatItem } from "../../store/chatStore";
 
@@ -19,6 +19,7 @@ const ChatList: React.FC<ChatListProps> = ({ className = "", style }) => {
 
   // 使用聊天状态管理
   const chatList = useChatStore((state) => state.chatList);
+  const { currentChat, setCurrentChat } = useChatStore();
 
   // 根据搜索关键词和当前标签过滤聊天列表
   const filteredChatList = chatList
@@ -147,7 +148,11 @@ const ChatList: React.FC<ChatListProps> = ({ className = "", style }) => {
                       : "bg-green-500 dark:bg-green-600"
                   }`}
                 >
-                  {chat.avatar}
+                  {chat.type === "private" ? (
+                    <MessageCircle size={20} />
+                  ) : (
+                    <Users size={20} />
+                  )}
                 </div>
 
                 {/* 聊天信息 */}

@@ -3,6 +3,8 @@ import { useParams } from "react-router";
 import { Copy, Trash, RotateCcw } from "lucide-react";
 import useChatStore, { Message } from "../../store/chatStore";
 import ContextMenu, { ContextMenuItem } from "../common/ContextMenu";
+import { Socket } from "socket.io-client";
+import { useUserStore } from "../../store";
 
 // 导入新创建的组件
 import ChatHeader from "./common/ChatHeader";
@@ -12,6 +14,7 @@ import EmptyState from "./common/EmptyState";
 
 interface ChatAreaProps {
   className?: string;
+  socket: Socket | null;
 }
 
 // 定义联系人接口
@@ -30,10 +33,12 @@ interface Group {
   memberCount: number;
 }
 
-const ChatArea: React.FC<ChatAreaProps> = ({ className = "" }) => {
+const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
   const { contactId, groupId } = useParams();
   const [currentChat, setCurrentChat] = useState<Contact | Group | null>(null);
   const [isGroup, setIsGroup] = useState(false);
+  const userStore = useUserStore();
+  const userId = userStore.userInfo?.userId;
 
   // 计算当前聊天ID
   const chatId = useMemo(() => {
@@ -207,22 +212,45 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "" }) => {
   // 处理发送消息
   const handleSendMessage = useCallback(
     (content: string) => {
-      if (content && currentChat && chatId) {
+      if (content && currentChat && chatId && socket) {
+        const time = new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        
+        // 创建新消息对象
         const newMessage: Message = {
           id: chatMessages.length + 1,
           sender: "me",
           content: content,
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          time: time,
+          timestamp: Date.now(),
         };
-
+  
         // 添加消息到状态管理
         addMessage(chatId, newMessage);
+        
+        // 通过socket发送消息 - 修改事件名称为 "message"
+        if (isGroup) {
+          // 发送群聊消息
+          socket.emit("message", {
+            content: content,
+            sender: userId,
+            groupId: chatId,
+            time: time
+          });
+        } else {
+          // 发送私聊消息
+          socket.emit("message", {
+            content: content,
+            sender: userId,
+            receiver: chatId,
+            time: time
+          });
+        }
       }
     },
-    [currentChat, chatId, chatMessages.length, addMessage]
+    [currentChat, chatId, chatMessages.length, addMessage, socket, isGroup, userId]
   );
 
   // 处理表情选择
@@ -230,21 +258,10 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "" }) => {
     (emoji: string) => {
       if (currentChat && chatId) {
         // 直接发送表情消息
-        const newMessage: Message = {
-          id: chatMessages.length + 1,
-          sender: "me",
-          content: emoji,
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        };
-
-        // 添加消息到状态管理
-        addMessage(chatId, newMessage);
+        handleSendMessage(emoji);
       }
     },
-    [currentChat, chatId, chatMessages.length, addMessage]
+    [currentChat, chatId, handleSendMessage]
   );
 
   // 如果没有选择聊天对象，显示空状态
