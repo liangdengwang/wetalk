@@ -4,13 +4,11 @@ import EmojiPicker from "../EmojiPicker";
 
 interface ChatInputProps {
   onSendMessage: (content: string) => void;
-  onEmojiSelect: (emoji: string) => void;
   className?: string;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
-  onEmojiSelect,
   className = "",
 }) => {
   const [message, setMessage] = useState("");
@@ -25,8 +23,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const handleEmojiSelect = (emoji: string) => {
     setMessage((prevMessage) => prevMessage + emoji);
-    onEmojiSelect(emoji);
     setIsOpenEmojiPicker(false);
+    
+    // 将焦点重新设置到文本框
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {

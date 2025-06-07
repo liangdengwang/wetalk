@@ -280,15 +280,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
     [currentChat, chatId, userId, userStore.userInfo, addMessage, socket, isGroup, createMessage]
   );
 
-  // 处理表情选择
-  const handleEmojiSelect = useCallback(
-    (emoji: string) => {
-      if (currentChat && chatId) {
-        handleSendMessage(emoji);
-      }
-    },
-    [currentChat, chatId, handleSendMessage]
-  );
+
 
   // 上下文菜单状态
   const [contextMenu, setContextMenu] = useState<{
@@ -482,7 +474,6 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
       <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700">
         <ChatInput 
           onSendMessage={handleSendMessage}
-          onEmojiSelect={handleEmojiSelect}
         />
       </div>
 

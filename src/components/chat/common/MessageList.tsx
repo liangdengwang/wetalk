@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import { Message } from "../../../store/chatStore";
 import MessageItem from "./MessageItem";
 
@@ -15,6 +15,23 @@ const MessageList: React.FC<MessageListProps> = ({
   onMessageContextMenu,
   className = "",
 }) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 自动滚动到底部
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // 当消息列表更新时，自动滚动到底部
+  useEffect(() => {
+    // 使用setTimeout确保DOM更新完成后再滚动
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [messages]);
+
   // 对消息进行分组，相同发送者的连续消息分为一组
   const groupedMessages = useMemo(() => {
     return messages.map((message, index) => {
@@ -54,6 +71,9 @@ const MessageList: React.FC<MessageListProps> = ({
         </div>
         <p className="text-center mb-2">还没有消息</p>
         <p className="text-center text-sm">发送第一条消息开始聊天吧！</p>
+        
+        {/* 滚动到底部的锚点 */}
+        <div ref={messagesEndRef} />
       </div>
     );
   }
@@ -85,6 +105,9 @@ const MessageList: React.FC<MessageListProps> = ({
 
         {/* 底部留白，方便滚动到最新消息 */}
         <div className="h-6"></div>
+        
+        {/* 滚动到底部的锚点 */}
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );
