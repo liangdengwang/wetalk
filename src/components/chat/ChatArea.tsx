@@ -5,6 +5,8 @@ import useChatStore, { Message } from "../../store/chatStore";
 import ContextMenu, { ContextMenuItem } from "../common/ContextMenu";
 import { Socket } from "socket.io-client";
 import { useUserStore } from "../../store";
+import { useMessages } from "../../hooks/useMessages";
+import { MessageType, CreateMessageDto } from "../../utils/message";
 
 // 导入新创建的组件
 import ChatHeader from "./common/ChatHeader";
@@ -45,7 +47,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
     return isGroup ? groupId : contactId;
   }, [contactId, groupId, isGroup]);
 
-  // 使用聊天状态管理
+  // 使用聊天状态管理（本地数据优先）
   const messages = useChatStore((state) => state.messages);
   const chatList = useChatStore((state) => state.chatList);
   const markAsRead = useChatStore((state) => state.markAsRead);
@@ -53,15 +55,25 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
   const deleteMessage = useChatStore((state) => state.deleteMessage);
   const recallMessage = useChatStore((state) => state.recallMessage);
 
-  // 获取当前聊天的消息
+  // 获取当前聊天的消息（本地优先）
   const chatMessages = useMemo(() => {
     return chatId ? messages[chatId] || [] : [];
   }, [messages, chatId]);
 
+  // 使用API hooks进行后台同步
+  const {
+    loading,
+    error,
+    getPrivateMessages,
+    getGroupMessages,
+    createMessage,
+    markConversationAsRead,
+    clearError
+  } = useMessages();
+
   // 当路由参数变化时，更新当前聊天对象
   useEffect(() => {
     if (contactId) {     
-           
       // 从聊天列表中查找联系人
       const chatItem = chatList.find(
         (chat) => chat.id == contactId && !chat.isGroup
@@ -96,12 +108,187 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
     }
   }, [contactId, groupId, chatList]);
 
+  // 加载消息：先显示本地消息，再同步远程消息
+  useEffect(() => {
+    if (!chatId || !userId) return;
+
+    const loadAndMergeMessages = async () => {
+      try {
+        clearError();
+        console.log(`开始同步远程消息 - 聊天ID: ${chatId}, 是否群组: ${isGroup}`);
+        
+        // 先显示本地消息，用户可以立即看到聊天历史
+        console.log(`本地消息数量: ${chatMessages.length}`);
+        
+        // 然后异步加载远程消息进行合并
+        let apiMsgs;
+        if (isGroup) {
+          apiMsgs = await getGroupMessages(chatId);
+        } else {
+          apiMsgs = await getPrivateMessages(chatId);
+        }
+        
+        if (apiMsgs && apiMsgs.length > 0) {
+          console.log(`远程消息数量: ${apiMsgs.length}`);
+          // TODO: 这里可以实现消息合并逻辑，避免重复
+          // 为了简化，目前只使用本地消息
+        }
+      } catch (err) {
+        console.warn('同步远程消息失败，使用本地消息:', err);
+        // 失败时仍然显示本地消息，确保用户体验
+      }
+    };
+
+    loadAndMergeMessages();
+  }, [chatId, userId, isGroup, getPrivateMessages, getGroupMessages, clearError]);
+
   // 标记为已读的效果
   useEffect(() => {
     if (chatId) {
+      // 本地标记为已读
       markAsRead(chatId);
+      
+      // 异步同步到服务器（失败不影响本地状态）
+      if (userId) {
+        const syncReadStatus = async () => {
+          try {
+            if (isGroup) {
+              await markConversationAsRead(undefined, chatId);
+            } else {
+              await markConversationAsRead(chatId, undefined);
+            }
+          } catch (err) {
+            console.warn('同步已读状态失败:', err);
+          }
+        };
+        syncReadStatus();
+      }
     }
-  }, [chatId, markAsRead]);
+  }, [chatId, userId, isGroup, markAsRead, markConversationAsRead]);
+
+  // 自动重发机制：监听网络状态变化，重发待发送的消息
+  useEffect(() => {
+    const retryPendingMessages = async () => {
+      const pendingMessages = JSON.parse(localStorage.getItem('pendingMessages') || '[]');
+      if (pendingMessages.length === 0) return;
+
+      console.log(`尝试重发 ${pendingMessages.length} 条待发送消息`);
+      
+      for (const pending of pendingMessages) {
+        try {
+          await createMessage(pending.messageData);
+          console.log('重发消息成功:', pending.messageData.content);
+          
+          // 从待发送列表移除
+          const remaining = JSON.parse(localStorage.getItem('pendingMessages') || '[]');
+          const filtered = remaining.filter((msg: {localId: number}) => msg.localId !== pending.localId);
+          localStorage.setItem('pendingMessages', JSON.stringify(filtered));
+        } catch (err) {
+          console.log('重发消息失败，保持在待发送列表:', pending.messageData.content, err);
+        }
+      }
+    };
+
+    const handleOnline = () => {
+      console.log('网络已恢复，尝试重发待发送消息');
+      retryPendingMessages();
+    };
+
+    // 页面加载时尝试重发
+    retryPendingMessages();
+    
+    // 监听网络状态
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [createMessage]);
+
+  // 处理发送消息（本地优先策略）
+  const handleSendMessage = useCallback(
+    async (content: string) => {
+      if (!content || !currentChat || !chatId || !userId) return;
+
+      const time = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      
+      // 1. 先创建本地消息，立即显示
+      const newMessage: Message = {
+        id: Date.now() + Math.floor(Math.random() * 1000), // 确保唯一ID
+        sender: "me",
+        senderId: userId,
+        senderName: userStore.userInfo?.username || "我",
+        senderAvatar: userStore.userInfo?.username?.substring(0, 1) || "我",
+        content: content.trim(),
+        time: time,
+        timestamp: Date.now(),
+        deleted: false
+      };
+
+      // 立即添加到本地状态，提升用户体验
+      addMessage(chatId, newMessage);
+
+      // 2. 通过Socket发送实时消息
+      if (socket && socket.connected) {
+        try {
+          const socketMessage = {
+            content: content.trim(),
+            sender: userId,
+            senderName: userStore.userInfo?.username,
+            senderAvatar: userStore.userInfo?.username?.substring(0, 1),
+            time: time,
+            ...(isGroup ? { groupId: chatId } : { receiver: chatId })
+          };
+          
+          socket.emit("message", socketMessage);
+          console.log('Socket消息发送成功');
+        } catch (err) {
+          console.warn('Socket发送失败:', err);
+        }
+      }
+
+      // 3. 异步保存到后端（失败不影响本地显示）
+      try {
+        const messageData: CreateMessageDto = {
+          content: content.trim(),
+          messageType: isGroup ? MessageType.ROOM : MessageType.PRIVATE,
+          ...(isGroup ? { roomId: chatId } : { receiver: chatId })
+        };
+        
+        const savedMessage = await createMessage(messageData);
+        console.log('消息保存到后端成功:', savedMessage?.id);
+        
+        // 可以在这里更新本地消息的服务器ID，用于后续操作
+        
+      } catch (err) {
+        console.warn('消息保存到后端失败:', err);
+        // 将消息标记为待同步，稍后重试
+        const pendingMessages = JSON.parse(localStorage.getItem('pendingMessages') || '[]');
+        pendingMessages.push({
+          messageData: {
+            content: content.trim(),
+            messageType: isGroup ? MessageType.ROOM : MessageType.PRIVATE,
+            ...(isGroup ? { roomId: chatId } : { receiver: chatId })
+          },
+          localId: newMessage.id,
+          chatId,
+          timestamp: Date.now()
+        });
+        localStorage.setItem('pendingMessages', JSON.stringify(pendingMessages));
+      }
+    },
+    [currentChat, chatId, userId, userStore.userInfo, addMessage, socket, isGroup, createMessage]
+  );
+
+  // 处理表情选择
+  const handleEmojiSelect = useCallback(
+    (emoji: string) => {
+      if (currentChat && chatId) {
+        handleSendMessage(emoji);
+      }
+    },
+    [currentChat, chatId, handleSendMessage]
+  );
 
   // 上下文菜单状态
   const [contextMenu, setContextMenu] = useState<{
@@ -142,17 +329,31 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
     }
   }, [contextMenu.message]);
 
-  // 删除消息
+  // 删除消息（只删除本地，不调用后端接口）
   const handleDeleteMessage = useCallback(() => {
     if (contextMenu.messageId && chatId) {
       deleteMessage(chatId, contextMenu.messageId);
+      console.log('本地删除消息:', contextMenu.messageId);
     }
   }, [contextMenu.messageId, chatId, deleteMessage]);
 
-  // 撤回消息
-  const handleRecallMessage = useCallback(() => {
-    if (contextMenu.messageId && chatId) {
-      recallMessage(chatId, contextMenu.messageId);
+  // 撤回消息（先撤回本地，再调用接口更新后台）
+  const handleRecallMessage = useCallback(async () => {
+    if (!contextMenu.messageId || !chatId) return;
+
+    // 1. 先撤回本地消息
+    recallMessage(chatId, contextMenu.messageId);
+    console.log('本地撤回消息:', contextMenu.messageId);
+
+    // 2. 异步调用后端接口更新
+    try {
+      // 这里需要找到对应的服务器消息ID
+      // 为了简化，暂时跳过后端更新
+      // await softDeleteMessage(serverMessageId);
+      console.log('后端撤回消息 - 待实现');
+    } catch (err) {
+      console.warn('后端撤回消息失败:', err);
+      // 失败时不影响本地已撤回的状态
     }
   }, [contextMenu.messageId, chatId, recallMessage]);
 
@@ -209,91 +410,88 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
     handleDeleteMessage,
   ]);
 
-  // 处理发送消息
-  const handleSendMessage = useCallback(
-    (content: string) => {
-      if (content && currentChat && chatId && socket) {
-        const time = new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-        
-        // 创建新消息对象
-        const newMessage: Message = {
-          id: chatMessages.length + 1,
-          sender: "me",
-          content: content,
-          time: time,
-          timestamp: Date.now(),
-        };
-  
-        // 添加消息到状态管理
-        addMessage(chatId, newMessage);
-        
-        // 通过socket发送消息 - 修改事件名称为 "message"
-        if (isGroup) {
-          // 发送群聊消息
-          socket.emit("message", {
-            content: content,
-            sender: userId,
-            groupId: chatId,
-            time: time
-          });
-        } else {
-          // 发送私聊消息
-          socket.emit("message", {
-            content: content,
-            sender: userId,
-            receiver: chatId,
-            time: time
-          });
-        }
-      }
-    },
-    [currentChat, chatId, chatMessages.length, addMessage, socket, isGroup, userId]
-  );
-
-  // 处理表情选择
-  const handleEmojiSelect = useCallback(
-    (emoji: string) => {
-      if (currentChat && chatId) {
-        // 直接发送表情消息
-        handleSendMessage(emoji);
-      }
-    },
-    [currentChat, chatId, handleSendMessage]
-  );
-
   // 如果没有选择聊天对象，显示空状态
   if (!currentChat) {
-    return <EmptyState className={className} />;
+    return (
+      <div className={`flex flex-col h-full bg-white dark:bg-gray-900 ${className}`}>
+        <EmptyState />
+      </div>
+    );
   }
 
   return (
-    <div
-      className={`flex flex-col h-full bg-gray-700 dark:bg-gray-800 ${className}`}
-    >
+    <div className={`flex flex-col h-full bg-white dark:bg-gray-900 ${className}`}>
       {/* 聊天头部 */}
-      <ChatHeader
-        currentChat={currentChat}
-        isGroup={isGroup}
-        className="flex-shrink-0"
-      />
+      <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700">
+        <ChatHeader
+          currentChat={currentChat}
+          isGroup={isGroup}
+        />
+      </div>
 
-      {/* 消息列表 */}
-      <MessageList
-        messages={chatMessages}
-        isGroup={isGroup}
-        onMessageContextMenu={handleMessageContextMenu}
-        className="flex-1"
-      />
+      {/* 消息区域 */}
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* 状态提示区 */}
+        <div className="flex-shrink-0">
+          {/* 错误提示 */}
+          {error && (
+            <div className="px-4 py-2 bg-red-50 border-b border-red-200 text-red-700 text-sm">
+              <div className="flex items-center justify-between">
+                <span>❌ {error}</span>
+                <button 
+                  onClick={clearError}
+                  className="text-red-600 hover:text-red-800 font-medium"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
 
-      {/* 聊天输入区域 */}
-      <ChatInput
-        onSendMessage={handleSendMessage}
-        onEmojiSelect={handleEmojiSelect}
-        className="flex-shrink-0"
-      />
+          {/* 同步状态 */}
+          {loading && (
+            <div className="px-4 py-2 bg-blue-50 border-b border-blue-200 text-blue-700 text-sm">
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
+                正在同步消息...
+              </div>
+            </div>
+          )}
+
+          {/* 连接状态指示器 */}
+          {!socket || !socket.connected ? (
+            <div className="px-4 py-2 bg-yellow-50 border-b border-yellow-200 text-yellow-700 text-sm">
+              <div className="flex items-center">
+                <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></span>
+                离线模式 - 消息将在连接恢复后同步
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {/* 消息列表 */}
+        <MessageList
+          messages={chatMessages}
+          isGroup={isGroup}
+          onMessageContextMenu={handleMessageContextMenu}
+          className="flex-1"
+        />
+      </div>
+
+      {/* 聊天输入框 */}
+      <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700">
+        <ChatInput 
+          onSendMessage={handleSendMessage}
+          onEmojiSelect={handleEmojiSelect}
+        />
+      </div>
+
+      {/* 调试信息 */}
+      {chatId && (
+        <div className="px-4 py-1 bg-gray-50 border-t border-gray-200 text-gray-500 text-xs">
+          🔧 调试: 聊天ID={chatId}, 本地消息数={chatMessages.length}, 连接状态={socket?.connected ? '已连接' : '断开'}
+        </div>
+      )}
 
       {/* 上下文菜单 */}
       <ContextMenu

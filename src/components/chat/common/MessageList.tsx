@@ -34,7 +34,7 @@ const MessageList: React.FC<MessageListProps> = ({
   if (messages.length === 0) {
     return (
       <div
-        className={`flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 ${className}`}
+        className={`flex flex-col items-center justify-center h-full bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 ${className}`}
       >
         <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mb-4">
           <svg
@@ -59,7 +59,7 @@ const MessageList: React.FC<MessageListProps> = ({
   }
 
   return (
-    <div className={`flex-1 overflow-hidden ${className}`}>
+    <div className={`flex-1 overflow-hidden bg-gray-50 dark:bg-gray-800 ${className}`}>
       <div className="h-full overflow-y-auto px-0 py-4">
         {/* 日期分隔线 */}
         <div className="flex items-center px-4 mb-4">

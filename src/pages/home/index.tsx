@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../../components/common/Layout";
-import ChatList from "../../components/chat/ChatList";
+import ChatListWithAPI from "../../components/chat/ChatListWithAPI";
 import ChatArea from "../../components/chat/ChatArea";
 import { io, Socket } from "socket.io-client";
 import { useUserStore } from "../../store";
@@ -44,7 +44,7 @@ const Home: React.FC = () => {
 
       // 处理接收到的消息
       if (message) {
-        const { content, sender, receiver, groupId, time } = message;
+        const { content, sender, groupId, time } = message;
 
         // 确定聊天ID（私聊是发送者ID，群聊是群组ID）
         const chatId = groupId || sender;
@@ -102,7 +102,7 @@ const Home: React.FC = () => {
 
   return (
     <Layout
-      centerSlot={<ChatList className="h-full" socket={socket} />}
+      centerSlot={<ChatListWithAPI className="h-full"socket={socket} />}
       rightSlot={<ChatArea className="h-full" socket={socket} />}
     />
   );

@@ -19,17 +19,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
   // 如果消息被删除，显示特殊样式
   if (message.deleted) {
     return (
-      <div className="py-1 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150">
-        <div className="flex items-start">
-          {!isSelf && (
-            <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-white text-sm font-semibold mr-3 opacity-50 flex-shrink-0">
-              {message.senderAvatar || (isGroup ? "G" : "U")}
-            </div>
-          )}
-          <div className="flex-1">
-            <p className="text-gray-400 dark:text-gray-500 text-sm italic w-full text-center">
-              {isSelf ? "你" : message.senderName || "用户"} 撤回了一条消息
-            </p>
+      <div className="py-2 px-4 hover:bg-white dark:hover:bg-gray-700 transition-colors duration-200">
+        <div className="flex items-center justify-center">
+          <div className="flex items-center px-3 py-1 bg-gray-200 dark:bg-gray-600 rounded-full">
+            <span className="text-gray-500 dark:text-gray-400 text-sm">
+              💬 {isSelf ? "你" : message.senderName || "用户"} 撤回了一条消息
+            </span>
           </div>
         </div>
       </div>
@@ -38,7 +33,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
   return (
     <div
-      className="py-1 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150"
+      className="py-2 px-4 hover:bg-white dark:hover:bg-gray-700 transition-colors duration-200"
       onContextMenu={(e) => onContextMenu(e, message)}
     >
       <div className={`flex items-start group ${isSelf ? "justify-end" : ""}`}>
@@ -70,10 +65,10 @@ const MessageItem: React.FC<MessageItemProps> = ({
             }`}
           >
             <div
-              className={`px-3 py-2 rounded-lg break-words ${
+              className={`px-4 py-3 rounded-2xl break-words max-w-sm shadow-sm ${
                 isSelf
-                  ? "bg-[#5865F2] text-white rounded-tr-none"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-tl-none"
+                  ? "bg-blue-500 text-white rounded-br-md"
+                  : "bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-bl-md"
               }`}
             >
               {message.content}
@@ -91,7 +86,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
         {isSelf && (
           <div className="w-10 h-10 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center text-white text-sm font-semibold ml-3 flex-shrink-0">
-            我
+            {message.senderAvatar || "我"}
           </div>
         )}
       </div>
