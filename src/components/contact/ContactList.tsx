@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { UserPlus, Users } from "lucide-react";
+import { UserPlus, Users, Inbox } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import TabBar, { TabItem } from "../common/TabBar";
 import SearchBar from "../common/SearchBar";
 import ListItem from "../common/ListItem";
 import ActionButton from "../common/ActionButton";
+import AddFriendModal from "./AddFriendModal";
+import FriendRequestsModal from "./FriendRequestsModal";
 import { Contact as ContactType } from "../../utils/contact";
 import { Group as GroupType } from "../../utils/group";
+import { useFriends } from "../../hooks/useFriends";
+import { Friend } from "../../utils/friend";
 
 interface ContactListProps {
   className?: string;
@@ -33,8 +37,13 @@ const ContactList: React.FC<ContactListProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"contacts" | "groups">("contacts");
+  const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [showFriendRequestsModal, setShowFriendRequestsModal] = useState(false);
   const navigate = useNavigate();
   const { contactId, groupId } = useParams();
+  
+  // 使用好友管理Hook
+  const { friends, loading: friendsLoading, error: friendsError, loadFriends } = useFriends();
 
   // 定义切换栏选项
   const tabs: TabItem[] = [
@@ -42,8 +51,31 @@ const ContactList: React.FC<ContactListProps> = ({
     { id: "groups", label: "群聊" },
   ];
 
+  // 将Friend转换为Contact格式
+  const convertFriendsToContacts = (friends: Friend[]): ContactType[] => {
+    // 确保friends是数组
+    if (!Array.isArray(friends)) {
+      return [];
+    }
+    return friends.map(friend => ({
+      id: friend.id,
+      name: friend.username,
+      avatar: friend.avatar || friend.username.charAt(0),
+      status: friend.status || "离线"
+    }));
+  };
+
+  // 合并传入的联系人和好友列表
+  const allContacts = [
+    ...contacts,
+    ...convertFriendsToContacts(friends || [])
+  ].filter((contact, index, self) => 
+    // 去重，以id为准
+    index === self.findIndex(c => c.id === contact.id)
+  );
+
   // 根据搜索过滤列表
-  const filteredContacts = contacts.filter((contact) =>
+  const filteredContacts = allContacts.filter((contact) =>
     contact.name.includes(searchQuery)
   );
 
@@ -88,8 +120,8 @@ const ContactList: React.FC<ContactListProps> = ({
     setActiveTab(tabId as "contacts" | "groups");
   };
 
-  // 渲染加载状态 - 联系人
-  if (loading && activeTab === "contacts") {
+  // 渲染加载状态 - 联系人（包括好友加载）
+  if ((loading || friendsLoading) && activeTab === "contacts") {
     return (
       <div
         className={`h-full flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${className}`}
@@ -116,8 +148,8 @@ const ContactList: React.FC<ContactListProps> = ({
     );
   }
 
-  // 渲染错误状态 - 联系人
-  if (error && activeTab === "contacts") {
+  // 渲染错误状态 - 联系人（包括好友错误）
+  if ((error || friendsError) && activeTab === "contacts") {
     return (
       <div
         className={`h-full flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${className}`}
@@ -126,7 +158,7 @@ const ContactList: React.FC<ContactListProps> = ({
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-red-500 text-center">
             <p className="text-lg font-bold mb-2">出错了</p>
-            <p>{error}</p>
+            <p>{error || friendsError}</p>
           </div>
         </div>
       </div>
@@ -209,20 +241,55 @@ const ContactList: React.FC<ContactListProps> = ({
         )}
       </div>
 
-      {/* 添加按钮 */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-        <ActionButton
-          icon={
-            activeTab === "contacts" ? (
-              <UserPlus size={20} />
-            ) : (
-              <Users size={20} />
-            )
-          }
-          label={activeTab === "contacts" ? "添加联系人" : "创建群聊"}
-          fullWidth
-        />
+      {/* 底部操作区域 */}
+      <div className="border-t border-gray-200 dark:border-gray-700">
+        {activeTab === "contacts" && (
+          <div className="p-4 space-y-3">
+            {/* 好友请求入口 */}
+            <ActionButton
+              icon={<Inbox size={20} />}
+              label="好友请求"
+              fullWidth
+              onClick={() => setShowFriendRequestsModal(true)}
+            />
+            {/* 添加好友按钮 */}
+            <ActionButton
+              icon={<UserPlus size={20} />}
+              label="添加好友"
+              fullWidth
+              onClick={() => setShowAddFriendModal(true)}
+            />
+          </div>
+        )}
+        {activeTab === "groups" && (
+          <div className="p-4">
+            <ActionButton
+              icon={<Users size={20} />}
+              label="创建群聊"
+              fullWidth
+            />
+          </div>
+        )}
       </div>
+
+      {/* 弹窗组件 */}
+      <AddFriendModal
+        isOpen={showAddFriendModal}
+        onClose={() => setShowAddFriendModal(false)}
+        onSuccess={() => {
+          // 好友请求发送成功后可以刷新相关数据
+          console.log('好友请求发送成功');
+        }}
+      />
+      
+      <FriendRequestsModal
+        isOpen={showFriendRequestsModal}
+        onClose={() => setShowFriendRequestsModal(false)}
+        onSuccess={() => {
+          // 好友请求处理成功后刷新好友列表
+          loadFriends();
+        }}
+      />
     </div>
   );
 };
