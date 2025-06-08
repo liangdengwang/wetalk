@@ -11,7 +11,10 @@ interface ChatListProps {
   style?: React.CSSProperties;
 }
 
-const ChatListWithAPI: React.FC<ChatListProps> = ({ className = "", style }) => {
+const ChatListWithAPI: React.FC<ChatListProps> = ({ 
+  className = "", 
+  style
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "contacts" | "groups">(
     "all"

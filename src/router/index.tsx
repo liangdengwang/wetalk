@@ -4,6 +4,8 @@ import Setting from "../pages/setting/index";
 import Login from "../pages/login/index";
 import ContactsPage from "../pages/contacts/index";
 import TestFriend from "../pages/TestFriend";
+import TestWebSocket from "../pages/test-websocket";
+import DebugMessages from "../pages/debug-messages";
 import PrivateRoute from "./PrivateRoute";
 
 const RouterConfig: React.FC = () => (
@@ -29,6 +31,8 @@ const RouterConfig: React.FC = () => (
 
       {/* 测试页面 */}
       <Route path="/test-friend" element={<TestFriend />} />
+      <Route path="/test-websocket" element={<TestWebSocket />} />
+      <Route path="/debug-messages" element={<DebugMessages />} />
     </Route>
 
     {/* 默认路由重定向到聊天页面 */}

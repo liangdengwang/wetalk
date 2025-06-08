@@ -1,110 +1,63 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Layout from "../../components/common/Layout";
 import ChatListWithAPI from "../../components/chat/ChatListWithAPI";
 import ChatArea from "../../components/chat/ChatArea";
-import { io, Socket } from "socket.io-client";
-import { useUserStore } from "../../store";
-import useChatStore, { Message } from "../../store/chatStore";
-import { API_CONFIG } from "../../utils/config";
+import { useWebSocketChat } from "../../hooks/useWebSocketChat";
 
 const Home: React.FC = () => {
-  const userStore = useUserStore();
-  const token = userStore.userInfo?.token;
-  const userId = userStore.userInfo?.userId;
-  const [socket, setSocket] = useState<Socket | null>(null);
-
-  // 获取聊天store的方法
-  const addMessage = useChatStore((state) => state.addMessage);
-  const addOrUpdateChatItem = useChatStore(
-    (state) => state.addOrUpdateChatItem
-  );
-
-  useEffect(() => {
-    if (!token) return;
-
-    // 创建socket连接，与后端网关对齐
-    const newSocket = io(API_CONFIG.WS_URL, {
-      query: {
-        token: token,
-      },
-    });
-
-    // 添加连接事件监听
-    newSocket.on("connect", () => {
-      console.log("Socket连接成功");
-    });
-
-    newSocket.on("connect_error", (error) => {
-      console.error("Socket连接错误:", error);
-    });
-
-    // 监听接收消息事件
-    newSocket.on("receive_message", (message) => {
-      console.log("收到消息:", message);
-
-      // 处理接收到的消息
-      if (message) {
-        const { content, sender, groupId, time } = message;
-
-        // 确定聊天ID（私聊是发送者ID，群聊是群组ID）
-        const chatId = groupId || sender;
-
-        // 如果是自己发送的消息，不需要再次添加
-        if (sender === userId) return;
-
-        // 创建消息对象
-        const newMessage: Message = {
-          id: Date.now(), // 使用时间戳作为临时ID
-          sender: "other",
-          senderId: sender,
-          content: content,
-          time:
-            time ||
-            new Date().toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          timestamp: Date.now(),
-        };
-
-        // 添加消息到store
-        addMessage(chatId, newMessage);
-
-        // 如果是新的聊天，添加到聊天列表
-        addOrUpdateChatItem({
-          id: chatId,
-          name: message.senderName || "用户",
-          avatar: message.senderAvatar || "U",
-          isGroup: !!groupId,
-        });
-      }
-    });
-
-    // 监听用户状态变化
-    newSocket.on("user_status", (statusData) => {
-      console.log("用户状态变化:", statusData);
-      // 这里可以更新用户状态
-    });
-
-    // 监听好友请求
-    newSocket.on("friend_request", (request) => {
-      console.log("收到好友请求:", request);
-      // 这里可以更新好友请求列表
-    });
-
-    setSocket(newSocket);
-
-    // 组件卸载时断开连接
-    return () => {
-      newSocket.disconnect();
-    };
-  }, [token, userId, addMessage, addOrUpdateChatItem]); // 添加依赖项
+  // 使用新的WebSocket聊天系统
+  const {
+    isConnected,
+    isConnecting,
+    connectionError,
+    sendMessage,
+    clearError,
+  } = useWebSocketChat({
+    autoConnect: true,
+    onConnectionError: (error) => {
+      console.error('WebSocket连接错误:', error);
+    },
+  });
 
   return (
-    <Layout
-      centerSlot={<ChatListWithAPI className="h-full"socket={socket} />}
-      rightSlot={<ChatArea className="h-full" socket={socket} />}
-    />
+    <div className="h-screen flex flex-col">
+      {/* 连接状态指示器 */}
+      {connectionError && (
+        <div className="px-4 py-2 bg-red-100 text-red-700 border-red-200 border-b text-sm flex items-center justify-between">
+          <span>连接错误: {connectionError}</span>
+          <button
+            onClick={clearError}
+            className="text-red-600 hover:text-red-800 font-medium"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      
+      {isConnecting && (
+        <div className="px-4 py-2 bg-blue-100 text-blue-700 border-blue-200 border-b text-sm flex items-center">
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent mr-2"></div>
+          正在连接聊天服务...
+        </div>
+      )}
+
+      <div className="flex-1">
+        <Layout
+          centerSlot={
+            <ChatListWithAPI 
+              className="h-full"
+            />
+          }
+          rightSlot={
+            <ChatArea 
+              className="h-full" 
+              sendMessage={sendMessage}
+              isConnected={isConnected}
+            />
+          }
+        />
+      </div>
+    </div>
   );
 };
 

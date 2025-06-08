@@ -3,7 +3,6 @@ import { useParams } from "react-router";
 import { Copy, Trash, RotateCcw } from "lucide-react";
 import useChatStore, { Message } from "../../store/chatStore";
 import ContextMenu, { ContextMenuItem } from "../common/ContextMenu";
-import { Socket } from "socket.io-client";
 import { useUserStore } from "../../store";
 import { useMessages } from "../../hooks/useMessages";
 import { MessageType, CreateMessageDto } from "../../utils/message";
@@ -16,7 +15,8 @@ import EmptyState from "./common/EmptyState";
 
 interface ChatAreaProps {
   className?: string;
-  socket: Socket | null;
+  sendMessage?: (content: string, receiver?: string, groupId?: string) => boolean;
+  isConnected?: boolean;
 }
 
 // 定义联系人接口
@@ -35,7 +35,11 @@ interface Group {
   memberCount: number;
 }
 
-const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
+const ChatArea: React.FC<ChatAreaProps> = ({ 
+  className = "", 
+  sendMessage: webSocketSendMessage,
+  isConnected = false 
+}) => {
   const { contactId, groupId } = useParams();
   const [currentChat, setCurrentChat] = useState<Contact | Group | null>(null);
   const [isGroup, setIsGroup] = useState(false);
@@ -227,23 +231,26 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
 
       // 立即添加到本地状态，提升用户体验
       addMessage(chatId, newMessage);
+      
+      // 更新聊天列表中的最后一条消息
+      useChatStore.getState().updateLastMessage(chatId, content.trim());
 
-      // 2. 通过Socket发送实时消息
-      if (socket && socket.connected) {
+      // 2. 通过WebSocket发送实时消息
+      if (webSocketSendMessage && isConnected) {
         try {
-          const socketMessage = {
-            content: content.trim(),
-            sender: userId,
-            senderName: userStore.userInfo?.username,
-            senderAvatar: userStore.userInfo?.username?.substring(0, 1),
-            time: time,
-            ...(isGroup ? { groupId: chatId } : { receiver: chatId })
-          };
+          const success = webSocketSendMessage(
+            content.trim(),
+            isGroup ? undefined : chatId,
+            isGroup ? chatId : undefined
+          );
           
-          socket.emit("message", socketMessage);
-          console.log('Socket消息发送成功');
+          if (success) {
+            console.log('WebSocket消息发送成功');
+          } else {
+            console.warn('WebSocket发送失败');
+          }
         } catch (err) {
-          console.warn('Socket发送失败:', err);
+          console.warn('WebSocket发送失败:', err);
         }
       }
 
@@ -277,7 +284,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
         localStorage.setItem('pendingMessages', JSON.stringify(pendingMessages));
       }
     },
-    [currentChat, chatId, userId, userStore.userInfo, addMessage, socket, isGroup, createMessage]
+    [currentChat, chatId, userId, userStore.userInfo, addMessage, webSocketSendMessage, isConnected, isGroup, createMessage]
   );
 
 
@@ -451,7 +458,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
           )}
 
           {/* 连接状态指示器 */}
-          {!socket || !socket.connected ? (
+          {!isConnected ? (
             <div className="px-4 py-2 bg-yellow-50 border-b border-yellow-200 text-yellow-700 text-sm">
               <div className="flex items-center">
                 <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></span>
@@ -480,7 +487,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ className = "", socket }) => {
       {/* 调试信息 */}
       {chatId && (
         <div className="px-4 py-1 bg-gray-50 border-t border-gray-200 text-gray-500 text-xs">
-          🔧 调试: 聊天ID={chatId}, 本地消息数={chatMessages.length}, 连接状态={socket?.connected ? '已连接' : '断开'}
+          🔧 调试: 聊天ID={chatId}, 本地消息数={chatMessages.length}, 连接状态={isConnected ? '已连接' : '断开'}
         </div>
       )}
 
