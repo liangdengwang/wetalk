@@ -24,10 +24,15 @@ const Sidebar: React.FC<SidebarProps> = ({ className = "" }) => {
     >
       <div className="flex-1 flex flex-col items-center w-full">
         {/* profile */}
-
-        <motion.div className="w-10 h-10 rounded-full bg-white dark:bg-gray-200 flex items-center justify-center mb-10">
-          <User className="w-5 h-5 text-blue-700 dark:text-blue-900" />
-        </motion.div>
+        <NavLink
+          key="profile"
+          to="/setting/profile"
+        >
+          <motion.div className="w-10 h-10 rounded-full bg-white dark:bg-gray-200 flex items-center justify-center mb-10">
+            <User className="w-5 h-5 text-blue-700 dark:text-blue-900"/>
+          </motion.div>
+        </NavLink>
+        
 
         {/* Navigation Items */}
         <nav className="w-full">

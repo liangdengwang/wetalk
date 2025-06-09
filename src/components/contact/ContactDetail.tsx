@@ -182,22 +182,6 @@ const ContactDetail: React.FC<ContactDetailProps> = ({
             <MessageSquare className="w-5 h-5 mr-2" />
             发消息
           </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05, backgroundColor: "#059669" }}
-            whileTap={{ scale: 0.95 }}
-            className="flex-1 py-2 bg-green-600 dark:bg-green-700 text-white rounded-lg flex items-center justify-center"
-          >
-            <Phone className="w-5 h-5 mr-2" />
-            通话
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05, backgroundColor: "#7c3aed" }}
-            whileTap={{ scale: 0.95 }}
-            className="flex-1 py-2 bg-purple-600 dark:bg-purple-700 text-white rounded-lg flex items-center justify-center"
-          >
-            <Video className="w-5 h-5 mr-2" />
-            视频
-          </motion.button>
         </div>
       </div>
 

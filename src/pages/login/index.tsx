@@ -201,7 +201,7 @@ const Login = () => {
                   <input
                     type="text"
                     placeholder="在此输入您的用户名"
-                    className={`input input-bordered w-full text-blue-700 ${
+                    className={`input input-bordered w-full text-white ${
                       isDarkMode
                         ? "bg-gray-700/50 border-gray-600"
                         : "bg-white/5 border-blue-700"
@@ -219,7 +219,7 @@ const Login = () => {
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="在此输入您的密码"
-                    className={`input input-bordered w-full text-blue-700 ${
+                    className={`input input-bordered w-full text-white-700 ${
                       isDarkMode
                         ? "bg-gray-700/50 border-gray-600"
                         : "bg-white/5 border-blue-700"
@@ -255,7 +255,7 @@ const Login = () => {
                     <input
                       type={showRePassword ? "text" : "password"}
                       placeholder="请再次输入您的密码"
-                      className={`input input-bordered w-full text-blue-700 ${
+                      className={`input input-bordered w-full text-white-700 ${
                         isDarkMode
                           ? "bg-gray-700/50 border-gray-600"
                           : "bg-white/5 border-blue-700"
