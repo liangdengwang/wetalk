@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
-import BgWebM from "../../assets/videos/bg-video.webm";
-import BgVideo from "../../assets/videos/bg-video.mp4";
+// import BgWebM from "../../assets/videos/bg-video.webm";
+// import BgVideo from "../../assets/videos/bg-video.mp4";
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useUserStore, useThemeStore } from "../../store";
 import { ROUTE_CONFIG } from "../../utils/config";
@@ -124,8 +124,8 @@ const Login = () => {
             isDarkMode ? "opacity-50 brightness-50" : ""
           }`}
         >
-          <source src={BgWebM} type="video/webm" />
-          <source src={BgVideo} type="video/mp4" />
+          {/* <source src={BgWebM} type="video/webm" /> */}
+          {/* <source src={BgVideo} type="video/mp4" /> */}
         </video>
         {/* 标题和标语 */}
         <div className="w-2/5 h-[3/5] flex flex-col items-start justify-between gap-y-16">
