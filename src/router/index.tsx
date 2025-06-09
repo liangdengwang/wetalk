@@ -3,7 +3,6 @@ import Home from "../pages/home/index";
 import Setting from "../pages/setting/index";
 import Login from "../pages/login/index";
 import ContactsPage from "../pages/contacts/index";
-import TestFriend from "../pages/TestFriend";
 import PrivateRoute from "./PrivateRoute";
 
 const RouterConfig: React.FC = () => (
@@ -26,9 +25,6 @@ const RouterConfig: React.FC = () => (
       {/* 设置相关路由 */}
       <Route path="/setting" element={<Setting />} />
       <Route path="/setting/:settingId" element={<Setting />} />
-
-      {/* 测试页面 */}
-      <Route path="/test-friend" element={<TestFriend />} />
     </Route>
 
     {/* 默认路由重定向到聊天页面 */}

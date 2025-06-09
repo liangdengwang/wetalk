@@ -17,6 +17,8 @@ const ProfileSetting: React.FC<ProfileSettingProps> = ({ className = "" }) => {
   // 当用户数据加载完成时，更新表单数据
   React.useEffect(() => {
     if (user) {
+      console.log("user:", user);
+      
       setFormData({
         user_name: user.user_name,
         email: user.email || '',
@@ -203,41 +205,6 @@ const ProfileSetting: React.FC<ProfileSettingProps> = ({ className = "" }) => {
                 value={formData.bio || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
               />
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            账号安全
-          </h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors duration-200">
-              <div>
-                <h4 className="font-medium text-gray-900 dark:text-white">
-                  修改密码
-                </h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  上次更新于 3 个月前
-                </p>
-              </div>
-              <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200">
-                修改
-              </button>
-            </div>
-
-            <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors duration-200">
-              <div>
-                <h4 className="font-medium text-gray-900 dark:text-white">
-                  两步验证
-                </h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  提高账号安全性
-                </p>
-              </div>
-              <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200">
-                启用
-              </button>
             </div>
           </div>
         </div>

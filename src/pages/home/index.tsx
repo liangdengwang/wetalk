@@ -102,7 +102,7 @@ const Home: React.FC = () => {
 
   return (
     <Layout
-      centerSlot={<ChatListWithAPI className="h-full"socket={socket} />}
+      centerSlot={<ChatListWithAPI className="h-full" socket={socket} />}
       rightSlot={<ChatArea className="h-full" socket={socket} />}
     />
   );

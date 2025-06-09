@@ -39,10 +39,6 @@ const SettingDetail: React.FC<SettingDetailProps> = ({ className = "" }) => {
         return <AppearanceSetting className="h-full" />;
       case "language":
         return <DefaultSetting className="h-full" title="语言" />;
-      case "devices":
-        return <DefaultSetting className="h-full" title="已登录设备" />;
-      case "help":
-        return <DefaultSetting className="h-full" title="帮助" />;
       default:
         return <DefaultSetting className="h-full" title="设置" />;
     }

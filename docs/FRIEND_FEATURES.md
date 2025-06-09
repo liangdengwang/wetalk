@@ -42,10 +42,6 @@
 - 提供加载、更新用户信息的功能
 - 包含错误处理和加载状态
 
-### 7. 测试页面 (`src/pages/TestFriend.tsx`)
-- 用于测试好友功能的简单页面
-- 访问路径：`/test-friend`
-
 ## 更新的文件
 
 ### 1. 联系人列表组件 (`src/components/contact/ContactList.tsx`)

@@ -1,11 +1,10 @@
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
-import BgWebM from "../../assets/videos/bg-video.webm";
-import BgVideo from "../../assets/videos/bg-video.mp4";
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useUserStore, useThemeStore } from "../../store";
 import { ROUTE_CONFIG } from "../../utils/config";
+import Bg from "../../assets/image/bg.jpg"
 
 export type FormData = {
   username: string;
@@ -115,25 +114,21 @@ const Login = () => {
   return (
     <>
       <title>{`${isLogin ? "登陆" : "注册"} | WeTalk`}</title>
-      <div className="w-screen h-screen flex justify-center items-center">
-        <video
-          autoPlay
-          loop
-          muted
-          className={`fixed top-0 left-0 w-screen h-screen object-cover z-[-1] ${
-            isDarkMode ? "opacity-50 brightness-50" : ""
-          }`}
-        >
-          <source src={BgWebM} type="video/webm" />
-          <source src={BgVideo} type="video/mp4" />
-        </video>
+      <div className="w-screen h-screen flex justify-center items-center"
+        style={{
+          backgroundImage: `url(${Bg})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: "center",
+          backgroundSize: "cover"
+        }}
+      >
         {/* 标题和标语 */}
-        <div className="w-2/5 h-[3/5] flex flex-col items-start justify-between gap-y-16">
+        <div className="w-2/5 h-[3/5] flex flex-col items-start justify-between gap-y-1 text-blue-700">
           <motion.h1
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="font-design font-black text-9xl text-white"
+            className="font-design font-black text-9xl"
           >
             WeTalk在线聊天室
           </motion.h1>
@@ -142,7 +137,7 @@ const Login = () => {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="font-mono text-3xl text-white"
+            className="font-mono text-3xl"
           >
             简单、即时、加密，用的更放心。
           </motion.p>

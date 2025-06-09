@@ -6,10 +6,8 @@ import {
   Bell,
   Shield,
   Globe,
-  HelpCircle,
   Info,
   Moon,
-  Smartphone,
 } from "lucide-react";
 
 interface SettingListProps {
@@ -29,6 +27,12 @@ const SettingList: React.FC<SettingListProps> = ({ className = "" }) => {
       description: "修改你的个人信息和头像",
     },
     {
+      id: "appearance",
+      icon: Moon,
+      label: "外观",
+      description: "自定义应用的主题和界面",
+    },
+    {
       id: "notifications",
       icon: Bell,
       label: "通知设置",
@@ -41,28 +45,10 @@ const SettingList: React.FC<SettingListProps> = ({ className = "" }) => {
       description: "控制谁可以联系你和查看你的信息",
     },
     {
-      id: "appearance",
-      icon: Moon,
-      label: "外观",
-      description: "自定义应用的主题和界面",
-    },
-    {
       id: "language",
       icon: Globe,
       label: "语言",
       description: "更改应用的显示语言",
-    },
-    {
-      id: "devices",
-      icon: Smartphone,
-      label: "已登录设备",
-      description: "查看和管理已登录的设备",
-    },
-    {
-      id: "help",
-      icon: HelpCircle,
-      label: "帮助",
-      description: "获取帮助和支持",
     },
     {
       id: "about",

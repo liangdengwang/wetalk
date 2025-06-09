@@ -19,7 +19,6 @@ const ChatList: React.FC<ChatListProps> = ({ className = "", style }) => {
 
   // 使用聊天状态管理
   const chatList = useChatStore((state) => state.chatList);
-  const { currentChat, setCurrentChat } = useChatStore();
 
   // 根据搜索关键词和当前标签过滤聊天列表
   const filteredChatList = chatList

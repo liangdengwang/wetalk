@@ -60,7 +60,7 @@ const AboutSetting: React.FC<AboutSettingProps> = ({ className = "" }) => {
             </p>
             <p className="text-gray-700 dark:text-gray-300 flex justify-between transition-colors duration-200">
               <span>开发者:</span>
-              <span className="font-medium">Claude Team</span>
+              <span className="font-medium">Liangdengwang Team</span>
             </p>
             <p className="text-gray-700 dark:text-gray-300 flex justify-between transition-colors duration-200">
               <span>发布日期:</span>
@@ -75,34 +75,17 @@ const AboutSetting: React.FC<AboutSettingProps> = ({ className = "" }) => {
           </h4>
           <div className="flex space-x-3">
             <a
-              href="https://github.com"
+              href="https://github.com/laingdengwang"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
             >
               <Github className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </a>
-            <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
-            >
-              <Twitter className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-            </a>
-            <a
-              href="https://wetalk.example.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
-            >
-              <Globe className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-            </a>
           </div>
         </div>
-
         <div className="text-center text-sm text-gray-500 dark:text-gray-400 pt-4 transition-colors duration-200">
-          <p>© 2023 WeTalk. 保留所有权利。</p>
+          <p>© {new Date().getFullYear()} WeTalk. 保留所有权利。</p>
         </div>
       </div>
     </BaseSettingLayout>
